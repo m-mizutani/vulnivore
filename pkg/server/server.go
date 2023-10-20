@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/m-mizutani/vulsink/pkg/domain/interfaces"
-	"github.com/m-mizutani/vulsink/pkg/utils"
+	"github.com/m-mizutani/vulnivore/pkg/domain/interfaces"
+	"github.com/m-mizutani/vulnivore/pkg/domain/model"
+	"github.com/m-mizutani/vulnivore/pkg/utils"
 )
 
 type Server struct {
@@ -16,12 +17,17 @@ type apiResponse struct {
 	data any
 }
 
-type apiHandler func(uc interfaces.UseCase, req *http.Request) (*apiResponse, error)
+type apiHandler func(ctx *model.Context, uc interfaces.UseCase, req *http.Request) (*apiResponse, error)
 
 func New(uc interfaces.UseCase) *Server {
 	api := func(hdlr apiHandler) http.HandlerFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			resp, err := hdlr(uc, r)
+			ctx, ok := r.Context().(*model.Context)
+			if !ok {
+				ctx = model.NewContext(model.WithContext(r.Context()))
+			}
+
+			resp, err := hdlr(ctx, uc, r)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				utils.SafeMarshal(w, err)
@@ -36,6 +42,15 @@ func New(uc interfaces.UseCase) *Server {
 	route.Use(accessLogger)
 	route.Route("/health", func(r chi.Router) {
 		r.Get("/hello", api(hello))
+	})
+
+	route.Route("/webhook", func(r chi.Router) {
+		r.Route("/github", func(r chi.Router) {
+			r.Route("/action", func(r chi.Router) {
+				r.Use(authGitHubAction)
+				r.Post("/sarif", api(recvGitHubActionSARIF))
+			})
+		})
 	})
 
 	return &Server{

@@ -10,7 +10,8 @@ import (
 	"github.com/m-mizutani/clog"
 	"github.com/m-mizutani/goerr"
 	"github.com/m-mizutani/masq"
-	"github.com/m-mizutani/vulsink/pkg/utils"
+	"github.com/m-mizutani/vulnivore/pkg/domain/model"
+	"github.com/m-mizutani/vulnivore/pkg/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -57,13 +58,15 @@ func init() {
 	filter = masq.New(
 		// Mask value with `masq:"secret"` tag
 		masq.WithTag("secret"),
+		masq.WithType[model.GitHubPrivateKey](),
+		masq.WithType[model.GitHubSecret](),
 	)
 
 	jsonLogger = newJSONLogger(os.Stdout, slog.LevelInfo)
 	consoleLogger = newConsoleLogger(os.Stdout, slog.LevelInfo)
 }
 
-func (x *Logger) Setup() error {
+func (x *Logger) Configure() error {
 	logLevelMap := map[string]slog.Level{
 		"debug": slog.LevelDebug,
 		"info":  slog.LevelInfo,

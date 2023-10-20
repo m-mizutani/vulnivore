@@ -10,33 +10,45 @@ import (
 	"time"
 
 	"github.com/m-mizutani/goerr"
-	"github.com/m-mizutani/vulsink/pkg/infra"
-	"github.com/m-mizutani/vulsink/pkg/server"
-	"github.com/m-mizutani/vulsink/pkg/usecase"
-	"github.com/m-mizutani/vulsink/pkg/utils"
+	"github.com/m-mizutani/vulnivore/pkg/cmd/config"
+	"github.com/m-mizutani/vulnivore/pkg/infra"
+	"github.com/m-mizutani/vulnivore/pkg/server"
+	"github.com/m-mizutani/vulnivore/pkg/usecase"
+	"github.com/m-mizutani/vulnivore/pkg/utils"
 	"github.com/urfave/cli/v2"
 )
 
 func newServe() *cli.Command {
 	var (
-		addr string
+		addr  string
+		ghApp config.GitHubApp
 	)
+
+	flags := []cli.Flag{
+		&cli.StringFlag{
+			Name:        "addr",
+			Aliases:     []string{"a"},
+			Value:       "127.0.0.1:8000",
+			Usage:       "Listen address",
+			Destination: &addr,
+		},
+	}
+	flags = append(flags, ghApp.Flags()...)
 
 	return &cli.Command{
 		Name:    "serve",
 		Aliases: []string{"s"},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "addr",
-				Aliases:     []string{"a"},
-				Value:       "127.0.0.1:8000",
-				Usage:       "Listen address",
-				Destination: &addr,
-			},
-		},
+		Flags:   flags,
 
 		Action: func(c *cli.Context) error {
-			clients := infra.New()
+			ghClient, err := ghApp.NewClient()
+			if err != nil {
+				return err
+			}
+
+			clients := infra.New(
+				infra.WithGitHubApp(ghClient),
+			)
 
 			uc := usecase.New(clients)
 

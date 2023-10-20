@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/m-mizutani/vulsink/pkg/cmd/config"
+	"github.com/m-mizutani/vulnivore/pkg/cmd/config"
 	"github.com/urfave/cli/v2"
 )
 
@@ -12,12 +12,12 @@ func New() *cli.App {
 	baseFlags := []cli.Flag{}
 
 	app := &cli.App{
-		Name: "vulsink",
+		Name: "vulnivore",
 		Flags: append(baseFlags,
 			loggerCfg.Flags()...,
 		),
 		Before: func(ctx *cli.Context) error {
-			if err := loggerCfg.Setup(); err != nil {
+			if err := loggerCfg.Configure(); err != nil {
 				return err
 			}
 			return nil

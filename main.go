@@ -5,8 +5,8 @@ import (
 
 	"log/slog"
 
-	"github.com/m-mizutani/vulsink/pkg/cmd"
-	"github.com/m-mizutani/vulsink/pkg/utils"
+	"github.com/m-mizutani/vulnivore/pkg/cmd"
+	"github.com/m-mizutani/vulnivore/pkg/utils"
 )
 
 func main() {

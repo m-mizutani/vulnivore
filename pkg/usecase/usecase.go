@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/m-mizutani/vulsink/pkg/domain/interfaces"
-	"github.com/m-mizutani/vulsink/pkg/infra"
+	"github.com/m-mizutani/vulnivore/pkg/domain/interfaces"
+	"github.com/m-mizutani/vulnivore/pkg/infra"
 )
 
 type useCase struct {

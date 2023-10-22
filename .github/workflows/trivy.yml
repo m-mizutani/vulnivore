@@ -5,6 +5,8 @@ on: [push]
 jobs:
   scan:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
       - name: Checkout upstream repo

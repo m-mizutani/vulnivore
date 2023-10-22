@@ -49,7 +49,6 @@ func (x *Logger) Flags() []cli.Flag {
 	}
 }
 
-var jsonLogger, consoleLogger *slog.Logger
 var filter func(groups []string, a slog.Attr) slog.Attr
 
 func init() {
@@ -61,9 +60,6 @@ func init() {
 		masq.WithType[model.GitHubPrivateKey](),
 		masq.WithType[model.GitHubSecret](),
 	)
-
-	jsonLogger = newJSONLogger(os.Stdout, slog.LevelInfo)
-	consoleLogger = newConsoleLogger(os.Stdout, slog.LevelInfo)
 }
 
 func (x *Logger) Configure() error {

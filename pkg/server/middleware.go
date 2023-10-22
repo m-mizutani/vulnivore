@@ -106,7 +106,7 @@ func token2GitHubRepo(tok jwt.Token) (*model.GitHubRepo, error) {
 	} else if repoID, err := strconv.ParseInt(s, 10, 64); err != nil {
 		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository_id can not be parsed as number").With("repository_id", s)
 	} else {
-		repo.RepoID = int64(repoID)
+		repo.RepoID = model.GitHubRepoID(repoID)
 	}
 
 	if v, ok := tok.Get("repository"); !ok {

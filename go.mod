@@ -4,14 +4,17 @@ go 1.21.0
 
 require (
 	cloud.google.com/go/firestore v1.13.0
+	firebase.google.com/go v3.13.0+incompatible
 	github.com/bradleyfalzon/ghinstallation/v2 v2.8.0
 	github.com/fatih/color v1.15.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/google/go-github/v56 v56.0.0
+	github.com/google/uuid v1.3.1
 	github.com/lestrrat-go/jwx/v2 v2.0.15
 	github.com/m-mizutani/clog v0.0.4
 	github.com/m-mizutani/goerr v0.1.11
-	github.com/m-mizutani/gt v0.0.5
+	github.com/m-mizutani/gots v0.0.0-20230529013424-0639119b2cdd
+	github.com/m-mizutani/gt v0.0.6-0.20230708234934-97ecdb8cc874
 	github.com/m-mizutani/masq v0.1.5
 	github.com/securego/gosec/v2 v2.18.1
 	github.com/urfave/cli/v2 v2.25.7
@@ -21,7 +24,9 @@ require (
 	cloud.google.com/go v0.110.2 // indirect
 	cloud.google.com/go/compute v1.19.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/iam v1.1.0 // indirect
 	cloud.google.com/go/longrunning v0.5.0 // indirect
+	cloud.google.com/go/storage v1.31.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
@@ -31,7 +36,6 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.4 // indirect
-	github.com/google/uuid v1.3.1 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/k0kubun/pp/v3 v3.2.0 // indirect

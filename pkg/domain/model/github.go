@@ -2,16 +2,9 @@ package model
 
 import "github.com/m-mizutani/goerr"
 
-type (
-	GitHubPrivateKey string
-	GitHubSecret     string
-)
-
-func (x GitHubPrivateKey) Byte() []byte { return []byte(x) }
-
 type GitHubApp struct {
-	AppID         int64
-	InstallID     int64
+	AppID         GitHubAppID
+	InstallID     GitHubAppInstallID
 	PrivateKey    GitHubPrivateKey
 	WebhookSecret GitHubSecret
 }
@@ -31,7 +24,7 @@ func (x *GitHubApp) Validate() error {
 }
 
 type GitHubRepo struct {
-	RepoID int64
+	RepoID GitHubRepoID
 	Owner  string
 	Name   string
 }

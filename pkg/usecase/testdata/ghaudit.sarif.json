@@ -1,0 +1,357 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "fullName": "Trivy Vulnerability Scanner",
+          "informationUri": "https://github.com/aquasecurity/trivy",
+          "name": "Trivy",
+          "rules": [
+            {
+              "id": "CVE-2022-28946",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "Out of bounds memory access in github.com/open-policy-agent/opa"
+              },
+              "fullDescription": {
+                "text": "An issue in the component ast/parser.go of Open Policy Agent v0.39.0 causes the application to incorrectly interpret every expression, causing a Denial of Service (DoS) via triggering out-of-range memory access."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-28946",
+              "help": {
+                "text": "Vulnerability CVE-2022-28946\nSeverity: HIGH\nPackage: github.com/open-policy-agent/opa\nFixed Version: 0.40.0\nLink: [CVE-2022-28946](https://avd.aquasec.com/nvd/cve-2022-28946)\nAn issue in the component ast/parser.go of Open Policy Agent v0.39.0 causes the application to incorrectly interpret every expression, causing a Denial of Service (DoS) via triggering out-of-range memory access.",
+                "markdown": "**Vulnerability CVE-2022-28946**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|github.com/open-policy-agent/opa|0.40.0|[CVE-2022-28946](https://avd.aquasec.com/nvd/cve-2022-28946)|\n\nAn issue in the component ast/parser.go of Open Policy Agent v0.39.0 causes the application to incorrectly interpret every expression, causing a Denial of Service (DoS) via triggering out-of-range memory access."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-33082",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "possible DoS via crafted input"
+              },
+              "fullDescription": {
+                "text": "An issue in the AST parser (ast/compile.go) of Open Policy Agent v0.10.2 allows attackers to cause a Denial of Service (DoS) via a crafted input."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-33082",
+              "help": {
+                "text": "Vulnerability CVE-2022-33082\nSeverity: HIGH\nPackage: github.com/open-policy-agent/opa\nFixed Version: 0.42.0\nLink: [CVE-2022-33082](https://avd.aquasec.com/nvd/cve-2022-33082)\nAn issue in the AST parser (ast/compile.go) of Open Policy Agent v0.10.2 allows attackers to cause a Denial of Service (DoS) via a crafted input.",
+                "markdown": "**Vulnerability CVE-2022-33082**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|github.com/open-policy-agent/opa|0.42.0|[CVE-2022-33082](https://avd.aquasec.com/nvd/cve-2022-33082)|\n\nAn issue in the AST parser (ast/compile.go) of Open Policy Agent v0.10.2 allows attackers to cause a Denial of Service (DoS) via a crafted input."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2021-43565",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "empty plaintext packet causes panic"
+              },
+              "fullDescription": {
+                "text": "The x/crypto/ssh package before 0.0.0-20211202192323-5770296d904e of golang.org/x/crypto allows an attacker to panic an SSH server."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2021-43565",
+              "help": {
+                "text": "Vulnerability CVE-2021-43565\nSeverity: HIGH\nPackage: golang.org/x/crypto\nFixed Version: 0.0.0-20211202192323-5770296d904e\nLink: [CVE-2021-43565](https://avd.aquasec.com/nvd/cve-2021-43565)\nThe x/crypto/ssh package before 0.0.0-20211202192323-5770296d904e of golang.org/x/crypto allows an attacker to panic an SSH server.",
+                "markdown": "**Vulnerability CVE-2021-43565**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|golang.org/x/crypto|0.0.0-20211202192323-5770296d904e|[CVE-2021-43565](https://avd.aquasec.com/nvd/cve-2021-43565)|\n\nThe x/crypto/ssh package before 0.0.0-20211202192323-5770296d904e of golang.org/x/crypto allows an attacker to panic an SSH server."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-27191",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "crash in a golang.org/x/crypto/ssh server"
+              },
+              "fullDescription": {
+                "text": "The golang.org/x/crypto/ssh package before 0.0.0-20220314234659-1baeb1ce4c0b for Go allows an attacker to crash a server in certain circumstances involving AddHostKey."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-27191",
+              "help": {
+                "text": "Vulnerability CVE-2022-27191\nSeverity: HIGH\nPackage: golang.org/x/crypto\nFixed Version: 0.0.0-20220314234659-1baeb1ce4c0b\nLink: [CVE-2022-27191](https://avd.aquasec.com/nvd/cve-2022-27191)\nThe golang.org/x/crypto/ssh package before 0.0.0-20220314234659-1baeb1ce4c0b for Go allows an attacker to crash a server in certain circumstances involving AddHostKey.",
+                "markdown": "**Vulnerability CVE-2022-27191**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|golang.org/x/crypto|0.0.0-20220314234659-1baeb1ce4c0b|[CVE-2022-27191](https://avd.aquasec.com/nvd/cve-2022-27191)|\n\nThe golang.org/x/crypto/ssh package before 0.0.0-20220314234659-1baeb1ce4c0b for Go allows an attacker to crash a server in certain circumstances involving AddHostKey."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-29526",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "faccessat checks wrong group"
+              },
+              "fullDescription": {
+                "text": "Go before 1.17.10 and 1.18.x before 1.18.2 has Incorrect Privilege Assignment. When called with a non-zero flags parameter, the Faccessat function could incorrectly report that a file is accessible."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-29526",
+              "help": {
+                "text": "Vulnerability CVE-2022-29526\nSeverity: MEDIUM\nPackage: golang.org/x/sys\nFixed Version: 0.0.0-20220412211240-33da011f77ad\nLink: [CVE-2022-29526](https://avd.aquasec.com/nvd/cve-2022-29526)\nGo before 1.17.10 and 1.18.x before 1.18.2 has Incorrect Privilege Assignment. When called with a non-zero flags parameter, the Faccessat function could incorrectly report that a file is accessible.",
+                "markdown": "**Vulnerability CVE-2022-29526**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|golang.org/x/sys|0.0.0-20220412211240-33da011f77ad|[CVE-2022-29526](https://avd.aquasec.com/nvd/cve-2022-29526)|\n\nGo before 1.17.10 and 1.18.x before 1.18.2 has Incorrect Privilege Assignment. When called with a non-zero flags parameter, the Faccessat function could incorrectly report that a file is accessible."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "5.3",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2022-28948",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "crash when attempting to deserialize invalid input"
+              },
+              "fullDescription": {
+                "text": "An issue in the Unmarshal function in Go-Yaml v3 causes the program to crash when attempting to deserialize invalid input."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2022-28948",
+              "help": {
+                "text": "Vulnerability CVE-2022-28948\nSeverity: HIGH\nPackage: gopkg.in/yaml.v3\nFixed Version: 3.0.0-20220521103104-8f96da9f5d5e\nLink: [CVE-2022-28948](https://avd.aquasec.com/nvd/cve-2022-28948)\nAn issue in the Unmarshal function in Go-Yaml v3 causes the program to crash when attempting to deserialize invalid input.",
+                "markdown": "**Vulnerability CVE-2022-28948**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|gopkg.in/yaml.v3|3.0.0-20220521103104-8f96da9f5d5e|[CVE-2022-28948](https://avd.aquasec.com/nvd/cve-2022-28948)|\n\nAn issue in the Unmarshal function in Go-Yaml v3 causes the program to crash when attempting to deserialize invalid input."
+              },
+              "properties": {
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            }
+          ],
+          "version": "0.44.1"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CVE-2022-28946",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: github.com/open-policy-agent/opa\nInstalled Version: v0.37.2\nVulnerability CVE-2022-28946\nSeverity: HIGH\nFixed Version: 0.40.0\nLink: [CVE-2022-28946](https://avd.aquasec.com/nvd/cve-2022-28946)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: github.com/open-policy-agent/opa@v0.37.2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-33082",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Package: github.com/open-policy-agent/opa\nInstalled Version: v0.37.2\nVulnerability CVE-2022-33082\nSeverity: HIGH\nFixed Version: 0.42.0\nLink: [CVE-2022-33082](https://avd.aquasec.com/nvd/cve-2022-33082)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: github.com/open-policy-agent/opa@v0.37.2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2021-43565",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Package: golang.org/x/crypto\nInstalled Version: v0.0.0-20210817164053-32db794688a5\nVulnerability CVE-2021-43565\nSeverity: HIGH\nFixed Version: 0.0.0-20211202192323-5770296d904e\nLink: [CVE-2021-43565](https://avd.aquasec.com/nvd/cve-2021-43565)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: golang.org/x/crypto@v0.0.0-20210817164053-32db794688a5"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-27191",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Package: golang.org/x/crypto\nInstalled Version: v0.0.0-20210817164053-32db794688a5\nVulnerability CVE-2022-27191\nSeverity: HIGH\nFixed Version: 0.0.0-20220314234659-1baeb1ce4c0b\nLink: [CVE-2022-27191](https://avd.aquasec.com/nvd/cve-2022-27191)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: golang.org/x/crypto@v0.0.0-20210817164053-32db794688a5"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-29526",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Package: golang.org/x/sys\nInstalled Version: v0.0.0-20220114195835-da31bd327af9\nVulnerability CVE-2022-29526\nSeverity: MEDIUM\nFixed Version: 0.0.0-20220412211240-33da011f77ad\nLink: [CVE-2022-29526](https://avd.aquasec.com/nvd/cve-2022-29526)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: golang.org/x/sys@v0.0.0-20220114195835-da31bd327af9"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2022-28948",
+          "ruleIndex": 5,
+          "level": "error",
+          "message": {
+            "text": "Package: gopkg.in/yaml.v3\nInstalled Version: v3.0.0-20210107192922-496545a6307b\nVulnerability CVE-2022-28948\nSeverity: HIGH\nFixed Version: 3.0.0-20220521103104-8f96da9f5d5e\nLink: [CVE-2022-28948](https://avd.aquasec.com/nvd/cve-2022-28948)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ghaudit",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 1,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b"
+              }
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "ROOTPATH": {
+          "uri": "file:///"
+        }
+      },
+      "properties": {
+        "imageName": "ghaudit",
+        "repoDigests": [],
+        "repoTags": [
+          "ghaudit:latest"
+        ]
+      }
+    }
+  ]
+}

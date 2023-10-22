@@ -4,9 +4,13 @@ import (
 	_ "embed"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/google/go-github/v56/github"
 	"github.com/m-mizutani/gt"
+	"github.com/m-mizutani/vulnivore/pkg/domain/model"
+	"github.com/m-mizutani/vulnivore/pkg/infra"
 	"github.com/m-mizutani/vulnivore/pkg/usecase"
 	"github.com/securego/gosec/v2/report/sarif"
 )
@@ -14,7 +18,10 @@ import (
 //go:embed testdata/postgres.sarif.json
 var sarifPostgresReport []byte
 
-func TestHandleSarif(t *testing.T) {
+//go:embed testdata/ghaudit.sarif.json
+var sarifGHAuditReport []byte
+
+func TestResultToIssueContents(t *testing.T) {
 	var report sarif.Report
 	gt.NoError(t, json.Unmarshal(sarifPostgresReport, &report))
 	gt.A(t, report.Runs).Length(1).At(0, func(t testing.TB, v *sarif.Run) {
@@ -29,4 +36,117 @@ func TestHandleSarif(t *testing.T) {
 
 	// for DEBUG
 	gt.NoError(t, os.WriteFile("out/postgres.sarif.body.md", []byte(issue.Body), 0644))
+}
+
+func TestHandleSarif(t *testing.T) {
+	testCases := map[string]struct {
+		countIssueCreate    int
+		putShouldContain    []model.VulnRecord
+		putShouldNotContain []model.VulnRecord
+		getWillReturn       []model.VulnRecord
+	}{
+		"first push": {
+			countIssueCreate: 6,
+			putShouldContain: []model.VulnRecord{
+				{
+					VulnRecordKey: model.VulnRecordKey{
+						RepoID:   4321,
+						VulnID:   "CVE-2022-28948",
+						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
+					},
+					Owner:         "m-mizutani",
+					RepoName:      "vulnivore",
+					GitHubIssueID: 42,
+				},
+			},
+			getWillReturn: []model.VulnRecord{},
+		},
+		"ignore existing record": {
+			countIssueCreate: 5,
+			putShouldNotContain: []model.VulnRecord{
+				{
+					VulnRecordKey: model.VulnRecordKey{
+						RepoID:   4321,
+						VulnID:   "CVE-2022-28948",
+						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
+					},
+					Owner:         "m-mizutani",
+					RepoName:      "vulnivore",
+					GitHubIssueID: 42,
+				},
+			},
+			getWillReturn: []model.VulnRecord{
+				{
+					VulnRecordKey: model.VulnRecordKey{
+						RepoID:   4321,
+						VulnID:   "CVE-2022-28948",
+						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
+					},
+					Owner:         "m-mizutani",
+					RepoName:      "vulnivore",
+					GitHubIssueID: 42,
+				},
+			},
+		},
+	}
+
+	for title, tc := range testCases {
+		t.Run(title, func(t *testing.T) {
+			var calledGet, calledPut int
+			dbClient := &dbMock{
+				getVulnRecords: func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
+					calledGet++
+					gt.Equal(t, repoID, 4321)
+					return tc.getWillReturn, nil
+				},
+				putVulnRecords: func(ctx *model.Context, vulns []model.VulnRecord) error {
+					calledPut++
+					at := gt.A(t, vulns).Length(tc.countIssueCreate)
+					for _, v := range tc.putShouldContain {
+						at.Have(v)
+					}
+					for _, v := range tc.putShouldNotContain {
+						at.NotHave(v)
+					}
+					return nil
+				},
+			}
+
+			var calledCreateIssue int
+			ghApp := &ghAppMock{
+				createIssue: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+					calledCreateIssue++
+					issueID := 199
+					if strings.Contains(issue.Body, "CVE-2022-28948") {
+						issueID = 42
+					}
+
+					return &github.Issue{
+						Number: &issueID,
+					}, nil
+				},
+			}
+
+			uc := usecase.New(infra.New(
+				infra.WithDB(dbClient),
+				infra.WithGitHubApp(ghApp),
+			))
+
+			var report sarif.Report
+			gt.NoError(t, json.Unmarshal(sarifGHAuditReport, &report))
+
+			ctx := model.NewContext(
+				model.WithGitHubRepo(&model.GitHubRepo{
+					RepoID: 4321,
+					Owner:  "m-mizutani",
+					Name:   "vulnivore",
+				}),
+			)
+
+			gt.NoError(t, uc.HandleSarif(ctx, &report))
+			gt.Equal(t, calledGet, 1)
+			gt.Equal(t, calledPut, 1)
+			gt.Equal(t, calledCreateIssue, tc.countIssueCreate)
+		})
+	}
 }

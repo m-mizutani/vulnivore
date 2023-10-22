@@ -1,7 +1,14 @@
-package firebase
+package firestore
 
 import (
+	"context"
+	"fmt"
+
 	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"github.com/m-mizutani/goerr"
+	"github.com/m-mizutani/vulnivore/pkg/domain/interfaces"
+	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 )
 
 type client struct {
@@ -9,112 +16,63 @@ type client struct {
 	collection string
 }
 
-/*
-func New(client *firestore.Client, collection string) model.DB {
-	return &client{
-		client:     client,
-		collection: collection,
+func New(ctx *model.Context, projectID string, collection string) (*client, error) {
+	conf := &firebase.Config{ProjectID: projectID}
+	app, err := firebase.NewApp(ctx, conf)
+	if err != nil {
+		return nil, goerr.Wrap(err, "Failed to initialize firebase app")
 	}
+
+	fbClient, err := app.Firestore(ctx)
+	if err != nil {
+		return nil, goerr.Wrap(err, "Failed to initialize firestore client")
+	}
+
+	return &client{
+		client:     fbClient,
+		collection: collection,
+	}, nil
 }
 
-func (x *client) GetVuln(ctx *model.Context, repoID int64, vulnID string) (*model.Vuln, error) {
-	doc, err := x.client.Collection(x.collection).Doc(repoID).Collection("vulns").Doc(vulnID).Get(ctx)
+func (x *client) Close() error {
+	if err := x.client.Close(); err != nil {
+		return goerr.Wrap(err, "failed to close firestore client")
+	}
+	return nil
+}
+
+var _ interfaces.Database = &client{}
+
+func (x *client) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
+	strID := fmt.Sprintf("%d", (repoID))
+
+	docs, err := x.client.Collection(x.collection).Doc(strID).Collection("records").Documents(ctx).GetAll()
 	if err != nil {
 		return nil, goerr.Wrap(err, "failed to get vuln from firestore")
 	}
 
-	var vuln model.Vuln
-	if err := doc.DataTo(&vuln); err != nil {
-		return nil, goerr.Wrap(err, "failed to unmarshal vuln from firestore")
-	}
-
-	return &vuln, nil
-}
-*/
-
-/*
-const (
-	attrKeyPrefix = "attr:"
-	lockKeyPrefix = "lock:"
-)
-
-func hashNamespace(input types.Namespace) string {
-	hash := sha512.New()
-	hash.Write([]byte(input))
-	hashed := hash.Sum(nil)
-	return hex.EncodeToString(hashed)
-}
-
-// GetAttrs implements interfaces.Database.
-func (x *Client) GetAttrs(ctx *model.Context, ns types.Namespace) (model.Attributes, error) {
-	key := attrKeyPrefix + hashNamespace(ns)
-	docs, err := x.client.Collection(x.collection).Doc(key).Collection("attributes").Documents(ctx).GetAll()
-	if err != nil {
-		return nil, goerr.Wrap(err, "failed to get attributes from firestore")
-	}
-
-	now := time.Now().UTC()
-	var attrs model.Attributes
+	var resp []model.VulnRecord
 	for _, doc := range docs {
-		if !doc.Exists() {
-			continue
+		var vuln model.VulnRecord
+		if err := doc.DataTo(&vuln); err != nil {
+			return nil, goerr.Wrap(err, "failed to unmarshal vuln from firestore")
 		}
-
-		var attr attribute
-		if err := doc.DataTo(&attr); err != nil {
-			return nil, goerr.Wrap(err, "failed to unmarshal attribute from firestore")
-		}
-		if attr.ExpiresAt.Before(now) {
-			continue
-		}
-		attrs = append(attrs, attr.Attribute)
+		resp = append(resp, vuln)
 	}
 
-	return attrs, nil
+	return resp, nil
 }
 
-// PutAttrs implements interfaces.Database.
-func (x *Client) PutAttrs(ctx *model.Context, ns types.Namespace, attrs model.Attributes) error {
+func (x *client) PutVulnRecords(ctx *model.Context, vulns []model.VulnRecord) error {
+	colRef := x.client.Collection(x.collection)
 	err := x.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		key := attrKeyPrefix + hashNamespace(ns)
-		collection := x.client.Collection(x.collection).Doc(key).Collection("attributes")
+		for _, vuln := range vulns {
+			strID := fmt.Sprintf("%d", vuln.RepoID)
+			collection := colRef.Doc(strID).Collection("records")
 
-		attrRefMap := map[types.AttrID]*firestore.DocumentRef{}
-		for _, attr := range attrs {
-			doc, err := collection.Doc(string(attr.ID)).Get(ctx)
-			if err != nil {
-				if status.Code(err) != codes.NotFound {
-					return goerr.Wrap(err, "failed to get attributes from firestore")
-				}
-				continue
-			}
-			attrRefMap[attr.ID] = doc.Ref
-		}
-
-		now := time.Now().UTC()
-
-		for _, base := range attrs {
-			ttl := base.TTL
-			if ttl == 0 {
-				ttl = types.DefaultAttributeTTL
-			}
-			attr := attribute{
-				Attribute: base,
-				ExpiresAt: now.Add(time.Duration(ttl) * time.Second),
-			}
-
-			if ref, ok := attrRefMap[attr.ID]; ok {
-				if err := tx.Set(ref, map[string]any{
-					"value":      attr.Value,
-					"expires_at": attr.ExpiresAt,
-				}, firestore.MergeAll); err != nil {
-					return goerr.Wrap(err, "failed to unmarshal attribute from firebase")
-				}
-			} else {
-				ref := collection.Doc(string(attr.ID))
-				if err := tx.Create(ref, attr); err != nil {
-					return goerr.Wrap(err, "failed to create attribute")
-				}
+			doc := collection.Doc(vuln.RecordID())
+			if err := tx.Create(doc, vuln); err != nil {
+				return goerr.Wrap(err, "failed to create vuln")
 			}
 		}
 
@@ -126,4 +84,3 @@ func (x *Client) PutAttrs(ctx *model.Context, ns types.Namespace, attrs model.At
 
 	return nil
 }
-*/

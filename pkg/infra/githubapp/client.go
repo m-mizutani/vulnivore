@@ -25,7 +25,7 @@ func New(cfg *model.GitHubApp) (*client, error) {
 
 func (x *client) setupClient() (*github.Client, error) {
 	tr := http.DefaultTransport
-	itr, err := ghinstallation.New(tr, x.cfg.AppID, x.cfg.InstallID, x.cfg.PrivateKey.Byte())
+	itr, err := ghinstallation.New(tr, x.cfg.AppID.Int64(), x.cfg.InstallID.Int64(), x.cfg.PrivateKey.Byte())
 	if err != nil {
 		return nil, goerr.Wrap(err, "Failed to create GitHub App client").With("cfg", x.cfg)
 	}
@@ -33,10 +33,10 @@ func (x *client) setupClient() (*github.Client, error) {
 	return github.NewClient(&http.Client{Transport: itr}), nil
 }
 
-func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) error {
+func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
 	client, err := x.setupClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Create an issue
@@ -47,9 +47,10 @@ func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) error
 		// Labels:   &[]string{"bug"},
 	}
 
-	if _, _, err := client.Issues.Create(ctx, issue.Owner, issue.Name, input); err != nil {
-		return goerr.Wrap(err, "Failed to create GitHub issue")
+	resp, _, err := client.Issues.Create(ctx, issue.Owner, issue.Name, input)
+	if err != nil {
+		return nil, goerr.Wrap(err, "Failed to create GitHub issue")
 	}
 
-	return nil
+	return resp, nil
 }

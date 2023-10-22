@@ -18,22 +18,53 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 		return goerr.Wrap(model.ErrInvalidContext, "GitHub repository is not set")
 	}
 
+	existsRecords, err := x.clients.Database().GetVulnRecords(ctx, repo.RepoID)
+	if err != nil {
+		return err
+	}
+
+	var newRecords []model.VulnRecord
 	for _, run := range report.Runs {
 		for _, result := range run.Results {
-			contents, err := resultToIssueContents(defaultIssueBodyTmpl, run.Tool, result)
-			if err != nil {
-				return err
-			}
+			for _, loc := range result.Locations {
+				key := model.VulnRecordKey{
+					RepoID:   repo.RepoID,
+					VulnID:   result.RuleID,
+					Location: loc.Message.Text,
+				}
+				existsRecord := existsRecords.Find(key)
+				if existsRecord != nil {
+					continue
+				}
 
-			issue := &model.GitHubIssue{
-				GitHubRepo:          *repo,
-				GitHubIssueContents: *contents,
-			}
+				contents, err := resultToIssueContents(defaultIssueBodyTmpl, run.Tool, result)
+				if err != nil {
+					return err
+				}
 
-			if err := x.clients.GitHubApp().CreateIssue(ctx, issue); err != nil {
-				return err
+				issue := &model.GitHubIssue{
+					GitHubRepo:          *repo,
+					GitHubIssueContents: *contents,
+				}
+
+				newIssue, err := x.clients.GitHubApp().CreateIssue(ctx, issue)
+				if err != nil {
+					return err
+				}
+
+				newRecords = append(newRecords, model.VulnRecord{
+					VulnRecordKey: key,
+
+					Owner:         repo.Owner,
+					RepoName:      repo.Name,
+					GitHubIssueID: newIssue.GetNumber(),
+				})
 			}
 		}
+	}
+
+	if err := x.clients.Database().PutVulnRecords(ctx, newRecords); err != nil {
+		return err
 	}
 
 	return nil

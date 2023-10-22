@@ -11,6 +11,7 @@ import (
 
 	"github.com/m-mizutani/goerr"
 	"github.com/m-mizutani/vulnivore/pkg/cmd/config"
+	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 	"github.com/m-mizutani/vulnivore/pkg/infra"
 	"github.com/m-mizutani/vulnivore/pkg/server"
 	"github.com/m-mizutani/vulnivore/pkg/usecase"
@@ -20,8 +21,9 @@ import (
 
 func newServe() *cli.Command {
 	var (
-		addr  string
-		ghApp config.GitHubApp
+		addr      string
+		ghApp     config.GitHubApp
+		firestore config.Firestore
 	)
 
 	flags := []cli.Flag{
@@ -34,6 +36,7 @@ func newServe() *cli.Command {
 		},
 	}
 	flags = append(flags, ghApp.Flags()...)
+	flags = append(flags, firestore.Flags()...)
 
 	return &cli.Command{
 		Name:    "serve",
@@ -41,13 +44,20 @@ func newServe() *cli.Command {
 		Flags:   flags,
 
 		Action: func(c *cli.Context) error {
+			ctx := model.NewContext(model.WithContext(c.Context))
 			ghClient, err := ghApp.NewClient()
+			if err != nil {
+				return err
+			}
+
+			fsClient, err := firestore.NewClient(ctx)
 			if err != nil {
 				return err
 			}
 
 			clients := infra.New(
 				infra.WithGitHubApp(ghClient),
+				infra.WithDB(fsClient),
 			)
 
 			uc := usecase.New(clients)

@@ -3,7 +3,7 @@ COPY . /app
 WORKDIR /app
 ENV CGO_ENABLED=0
 RUN go get -v
-RUN go build . -o vulnivore
+RUN go build -o vulnivore .
 
 FROM gcr.io/distroless/base:nonroot
 COPY --from=build-go /app/vulnivore /vulnivore

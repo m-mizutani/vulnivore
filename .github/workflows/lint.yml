@@ -14,3 +14,5 @@ jobs:
           go-version-file: "go.mod"
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@94d61e3205b61acf4ddabfeb13c5f8a13eb4167b # v2.5.0
+        with:
+          golangci_lint_flags: "--timeout 5m"

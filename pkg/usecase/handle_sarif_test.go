@@ -93,6 +93,7 @@ func TestHandleSarif(t *testing.T) {
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
 			var calledGet, calledPut int
+			foundRecords := map[model.VulnRecordKey]struct{}{}
 			dbClient := &dbMock{
 				getVulnRecords: func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
 					calledGet++
@@ -101,9 +102,13 @@ func TestHandleSarif(t *testing.T) {
 				},
 				putVulnRecords: func(ctx *model.Context, vulns []model.VulnRecord) error {
 					calledPut++
-					at := gt.A(t, vulns).Length(tc.countIssueCreate)
+					at := gt.A(t, vulns).Length(1)
+
 					for _, v := range tc.putShouldContain {
-						at.Have(v)
+						if vulns[0].VulnRecordKey == v.VulnRecordKey {
+							gt.Equal(t, vulns[0], v)
+							foundRecords[v.VulnRecordKey] = struct{}{}
+						}
 					}
 					for _, v := range tc.putShouldNotContain {
 						at.NotHave(v)
@@ -145,8 +150,9 @@ func TestHandleSarif(t *testing.T) {
 
 			gt.NoError(t, uc.HandleSarif(ctx, &report))
 			gt.Equal(t, calledGet, 1)
-			gt.Equal(t, calledPut, 1)
+			gt.Equal(t, calledPut, tc.countIssueCreate)
 			gt.Equal(t, calledCreateIssue, tc.countIssueCreate)
+			gt.M(t, foundRecords).Length(len(tc.putShouldContain))
 		})
 	}
 }

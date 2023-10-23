@@ -9,8 +9,16 @@ type useCase struct {
 	clients *infra.Clients
 }
 
-func New(clients *infra.Clients) interfaces.UseCase {
-	return &useCase{
+func New(clients *infra.Clients, options ...Option) interfaces.UseCase {
+	uc := &useCase{
 		clients: clients,
 	}
+
+	for _, opt := range options {
+		opt(uc)
+	}
+
+	return uc
 }
+
+type Option func(*useCase)

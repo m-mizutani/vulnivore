@@ -13,7 +13,6 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.0.15
 	github.com/m-mizutani/clog v0.0.4
 	github.com/m-mizutani/goerr v0.1.11
-	github.com/m-mizutani/gots v0.0.0-20230529013424-0639119b2cdd
 	github.com/m-mizutani/gt v0.0.6-0.20230708234934-97ecdb8cc874
 	github.com/m-mizutani/masq v0.1.5
 	github.com/securego/gosec/v2 v2.18.1

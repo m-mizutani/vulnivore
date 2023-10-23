@@ -28,6 +28,7 @@ func (x *Logger) Flags() []cli.Flag {
 			Aliases:     []string{"l"},
 			Value:       "info",
 			Usage:       "Log level [debug, info, warn, error]",
+			EnvVars:     []string{"VULNIVORE_LOG_LEVEL"},
 			Destination: &x.level,
 		},
 
@@ -36,6 +37,7 @@ func (x *Logger) Flags() []cli.Flag {
 			Aliases:     []string{"f"},
 			Value:       "text",
 			Usage:       "Log format [json, text]",
+			EnvVars:     []string{"VULNIVORE_LOG_FORMAT"},
 			Destination: &x.format,
 		},
 
@@ -44,6 +46,7 @@ func (x *Logger) Flags() []cli.Flag {
 			Aliases:     []string{"o"},
 			Value:       "stdout",
 			Usage:       "Log output [-, stdout, stderr, file path]",
+			EnvVars:     []string{"VULNIVORE_LOG_OUTPUT"},
 			Destination: &x.output,
 		},
 	}

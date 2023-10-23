@@ -44,6 +44,7 @@ func (x *GitHubApp) Flags() []cli.Flag {
 			Usage:       "GitHub App secret",
 			Destination: (*string)(&x.cfg.WebhookSecret),
 			EnvVars:     []string{"VULNIVORE_GITHUB_APP_SECRET"},
+			Required:    true,
 		},
 	}
 }

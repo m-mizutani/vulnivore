@@ -43,6 +43,26 @@ func (x *client) Close() error {
 
 var _ interfaces.Database = &client{}
 
+func (x *client) GetVulnRecordsByIssueID(ctx *model.Context, repoID model.GitHubRepoID, issueID int) (model.VulnRecords, error) {
+	strID := fmt.Sprintf("%d", (repoID))
+
+	docs, err := x.client.Collection(x.collection).Doc(strID).Collection("records").Where("GitHubIssueID", "==", issueID).Documents(ctx).GetAll()
+	if err != nil {
+		return nil, goerr.Wrap(err, "failed to get vuln from firestore")
+	}
+
+	var resp []model.VulnRecord
+	for _, doc := range docs {
+		var vuln model.VulnRecord
+		if err := doc.DataTo(&vuln); err != nil {
+			return nil, goerr.Wrap(err, "failed to unmarshal vuln from firestore")
+		}
+		resp = append(resp, vuln)
+	}
+
+	return resp, nil
+}
+
 func (x *client) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
 	strID := fmt.Sprintf("%d", (repoID))
 

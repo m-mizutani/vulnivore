@@ -23,7 +23,6 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 		return err
 	}
 
-	var newRecords []model.VulnRecord
 	for _, run := range report.Runs {
 		for _, result := range run.Results {
 			for _, loc := range result.Locations {
@@ -52,19 +51,20 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 					return err
 				}
 
-				newRecords = append(newRecords, model.VulnRecord{
+				newRecord := model.VulnRecord{
 					VulnRecordKey: key,
 
 					Owner:         repo.Owner,
 					RepoName:      repo.Name,
 					GitHubIssueID: newIssue.GetNumber(),
-				})
+				}
+
+				if err := x.clients.Database().PutVulnRecords(ctx, []model.VulnRecord{newRecord}); err != nil {
+					return err
+				}
+
 			}
 		}
-	}
-
-	if err := x.clients.Database().PutVulnRecords(ctx, newRecords); err != nil {
-		return err
 	}
 
 	return nil

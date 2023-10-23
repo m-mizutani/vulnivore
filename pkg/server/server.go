@@ -51,6 +51,7 @@ func New(uc interfaces.UseCase) *Server {
 				r.Post("/sarif", api(recvGitHubActionSARIF))
 			})
 			r.Route("/app", func(r chi.Router) {
+				r.Post("/event", api(recvGitHubAppEvent))
 			})
 		})
 	})

@@ -73,4 +73,10 @@ func TestFirestorePutAndGet(t *testing.T) {
 		NotHave(records[0]).
 		NotHave(records[1]).
 		Have(records[2])
+
+	resp3 := gt.R1(client.GetVulnRecordsByIssueID(ctx, repo1, 3)).NoError(t)
+	gt.A(t, resp3).Length(1).
+		NotHave(records[0]).
+		Have(records[1]).
+		NotHave(records[2])
 }

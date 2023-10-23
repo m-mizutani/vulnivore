@@ -30,8 +30,9 @@ func newServe() *cli.Command {
 		&cli.StringFlag{
 			Name:        "addr",
 			Aliases:     []string{"a"},
-			Value:       "127.0.0.1:8000",
+			Value:       "127.0.0.1:8192",
 			Usage:       "Listen address",
+			EnvVars:     []string{"VULNIVORE_ADDR"},
 			Destination: &addr,
 		},
 	}
@@ -45,6 +46,7 @@ func newServe() *cli.Command {
 
 		Action: func(c *cli.Context) error {
 			ctx := model.NewContext(model.WithContext(c.Context))
+
 			ghClient, err := ghApp.NewClient()
 			if err != nil {
 				return err

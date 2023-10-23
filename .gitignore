@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+.vscode
+tmp
+/pkg/usecase/out/*.md
+

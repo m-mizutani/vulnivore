@@ -46,7 +46,7 @@ var _ interfaces.Database = &client{}
 func (x *client) GetVulnRecordsByIssueID(ctx *model.Context, repoID model.GitHubRepoID, issueID int) (model.VulnRecords, error) {
 	strID := fmt.Sprintf("%d", (repoID))
 
-	docs, err := x.client.Collection(x.collection).Doc(strID).Collection("records").Where("GitHubIssueID", "==", issueID).Documents(ctx).GetAll()
+	docs, err := x.client.Collection(x.collection).Doc(strID).Collection("records").Where("IssueID", "==", issueID).Documents(ctx).GetAll()
 	if err != nil {
 		return nil, goerr.Wrap(err, "failed to get vuln from firestore")
 	}

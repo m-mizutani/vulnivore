@@ -34,9 +34,9 @@ func TestFirestorePutAndGet(t *testing.T) {
 				VulnID:   "CVE-1890-1234",
 				Location: uuid.NewString(),
 			},
-			Owner:         "m-mizutani",
-			RepoName:      "zatsu",
-			GitHubIssueID: 2,
+			Owner:    "m-mizutani",
+			RepoName: "zatsu",
+			IssueID:  2,
 		},
 		{
 			VulnRecordKey: model.VulnRecordKey{
@@ -44,9 +44,9 @@ func TestFirestorePutAndGet(t *testing.T) {
 				VulnID:   "CVE-1890-5678",
 				Location: uuid.NewString(),
 			},
-			Owner:         "m-mizutani",
-			RepoName:      "zatsu",
-			GitHubIssueID: 3,
+			Owner:    "m-mizutani",
+			RepoName: "zatsu",
+			IssueID:  3,
 		},
 		{
 			VulnRecordKey: model.VulnRecordKey{
@@ -54,9 +54,9 @@ func TestFirestorePutAndGet(t *testing.T) {
 				VulnID:   "CVE-1999-0731",
 				Location: uuid.NewString(),
 			},
-			Owner:         "m-mizutani",
-			RepoName:      "zatsu",
-			GitHubIssueID: 4,
+			Owner:    "m-mizutani",
+			RepoName: "zatsu",
+			IssueID:  4,
 		},
 	}
 

@@ -12,5 +12,9 @@ func (x *useCase) ValidateGitHubEvent(r *http.Request) ([]byte, error) {
 }
 
 func (x *useCase) HandleIssueEvent(ctx *model.Context, event *github.IssueEvent) error {
+	if event.Event == nil || *event.Event != "closed" {
+		return nil
+	}
+
 	return nil
 }

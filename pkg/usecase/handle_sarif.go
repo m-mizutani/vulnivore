@@ -54,9 +54,10 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				newRecord := model.VulnRecord{
 					VulnRecordKey: key,
 
-					Owner:         repo.Owner,
-					RepoName:      repo.Name,
-					GitHubIssueID: newIssue.GetNumber(),
+					Owner:      repo.Owner,
+					RepoName:   repo.Name,
+					IssueID:    newIssue.GetNumber(),
+					IssueState: "open",
 				}
 
 				if err := x.clients.Database().PutVulnRecords(ctx, []model.VulnRecord{newRecord}); err != nil {

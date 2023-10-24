@@ -26,6 +26,14 @@ func NewContext(options ...CtxOption) *Context {
 	return ctx
 }
 
+func (x *Context) New(options ...CtxOption) *Context {
+	ctx := *x // shallow copy
+	for _, opt := range options {
+		opt(&ctx)
+	}
+	return &ctx
+}
+
 func (x *Context) GitHubRepo() *GitHubRepo { return x.repo }
 func (x *Context) Logger() *slog.Logger    { return x.logger }
 

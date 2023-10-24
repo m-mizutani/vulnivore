@@ -7,6 +7,7 @@ import (
 
 	"log/slog"
 
+	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/m-mizutani/goerr"
@@ -26,10 +27,15 @@ func (x *statusWriter) WriteHeader(status int) {
 
 func accessLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := utils.Logger().With("request_id", uuid.NewString())
+		ctx := toVulnivoreContext(r.Context()).New(
+			model.WithLogger(logger),
+		)
+
 		sw := &statusWriter{ResponseWriter: w}
 
-		next.ServeHTTP(sw, r)
-		utils.Logger().Info("http access",
+		next.ServeHTTP(sw, r.WithContext(ctx))
+		logger.Info("http access",
 			slog.Int("status", sw.status),
 			slog.String("method", r.Method),
 			slog.String("remote", r.RemoteAddr),
@@ -49,6 +55,7 @@ func respondError(w http.ResponseWriter, status int, msg string) {
 
 func authGitHubAction(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := toVulnivoreContext(r.Context())
 
 		authHdr := r.Header.Get("Authorization")
 		if authHdr == "" {
@@ -87,8 +94,9 @@ func authGitHubAction(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := model.NewContext(
-			model.WithContext(r.Context()),
+		ctx.Logger().Info("GitHub ID token is verified", slog.Any("repo", repo))
+
+		ctx = ctx.New(
 			model.WithGitHubRepo(repo),
 		)
 

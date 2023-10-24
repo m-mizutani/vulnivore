@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -22,19 +23,18 @@ type apiHandler func(ctx *model.Context, uc interfaces.UseCase, req *http.Reques
 func New(uc interfaces.UseCase) *Server {
 	api := func(hdlr apiHandler) http.HandlerFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx, ok := r.Context().(*model.Context)
-			if !ok {
-				ctx = model.NewContext(model.WithContext(r.Context()))
-			}
+			ctx := toVulnivoreContext(r.Context())
 
 			resp, err := hdlr(ctx, uc, r)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				utils.SafeMarshal(w, err)
+				ctx.Logger().Error("handler error", slog.Any("err", err))
+				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			utils.SafeMarshal(w, resp)
+			utils.SafeMarshal(w, resp.data)
 		})
 	}
 

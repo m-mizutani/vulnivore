@@ -63,3 +63,22 @@ func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*git
 
 	return resp, nil
 }
+
+func (x *client) CloseIssue(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
+	client, err := x.setupClient()
+	if err != nil {
+		return err
+	}
+
+	// Close an issue
+	input := &github.IssueRequest{
+		State: github.String("closed"),
+	}
+
+	_, _, err = client.Issues.Edit(ctx, repo.Owner, repo.Name, issueNo, input)
+	if err != nil {
+		return goerr.Wrap(err, "Failed to close GitHub issue")
+	}
+
+	return nil
+}

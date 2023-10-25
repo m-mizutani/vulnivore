@@ -22,6 +22,10 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 	if err != nil {
 		return err
 	}
+	existsRecordMap := make(map[model.VulnRecordKey]*model.VulnRecord, len(existsRecords))
+	for i, record := range existsRecords {
+		existsRecordMap[record.VulnRecordKey] = &existsRecords[i]
+	}
 
 	for _, run := range report.Runs {
 		for _, result := range run.Results {
@@ -33,6 +37,7 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				}
 				existsRecord := existsRecords.Find(key)
 				if existsRecord != nil {
+					delete(existsRecordMap, key)
 					continue
 				}
 
@@ -65,6 +70,16 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				}
 
 			}
+		}
+	}
+
+	for _, record := range existsRecordMap {
+		if record.IssueState == "closed" {
+			continue
+		}
+
+		if err := x.clients.GitHubApp().CloseIssue(ctx, repo, record.IssueID); err != nil {
+			return err
 		}
 	}
 

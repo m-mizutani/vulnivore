@@ -14,5 +14,6 @@ type Database interface {
 
 type GitHubApp interface {
 	CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error)
+	CloseIssue(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error
 	ValidateEventPayload(r *http.Request) ([]byte, error)
 }

@@ -3,12 +3,16 @@ package usecase_test
 import (
 	_ "embed"
 	"encoding/json"
+	"io"
+	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/go-github/v56/github"
 	"github.com/m-mizutani/gt"
+	"github.com/m-mizutani/vulnivore/pkg/domain/interfaces"
 	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 	"github.com/m-mizutani/vulnivore/pkg/infra"
 	"github.com/m-mizutani/vulnivore/pkg/usecase"
@@ -158,4 +162,104 @@ func TestHandleSarif(t *testing.T) {
 			gt.M(t, foundRecords).Length(len(tc.putShouldContain))
 		})
 	}
+}
+
+type testSuite struct {
+	uc       interfaces.UseCase
+	dbClient *dbMock
+	ghApp    *ghAppMock
+}
+
+func setupTestSuite(t *testing.T) *testSuite {
+	dbClient := &dbMock{
+		getVulnRecords: func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
+			return nil, nil
+		},
+		putVulnRecords: func(ctx *model.Context, vulns []model.VulnRecord) error {
+			return nil
+		},
+	}
+	ghApp := &ghAppMock{
+		createIssue: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+			no := rand.Intn(100000)
+			return &github.Issue{
+				Number: &no,
+			}, nil
+		},
+		closeIssue: func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
+			return nil
+		},
+		validateEventPayload: func(r *http.Request) ([]byte, error) {
+			data, err := io.ReadAll(r.Body)
+			if err != nil {
+				return nil, err
+			}
+			return data, nil
+		},
+	}
+
+	uc := usecase.New(infra.New(
+		infra.WithDB(dbClient),
+		infra.WithGitHubApp(ghApp),
+	))
+
+	return &testSuite{
+		uc:       uc,
+		dbClient: dbClient,
+		ghApp:    ghApp,
+	}
+}
+
+func TestCloseResolvedVuln(t *testing.T) {
+	ts := setupTestSuite(t)
+
+	var report sarif.Report
+	gt.NoError(t, json.Unmarshal(sarifGHAuditReport, &report))
+
+	ctx := model.NewContext(
+		model.WithGitHubRepo(&model.GitHubRepo{
+			RepoID: 4321,
+			Owner:  "m-mizutani",
+			Name:   "ghaudit",
+		}),
+	)
+
+	var targetIssueNo int
+	ts.ghApp.createIssue = func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+		no := rand.Intn(100000)
+		if strings.Contains(issue.Title, "CVE-2022-28946") {
+			t.Log("target issue no:", no)
+			targetIssueNo = no
+		}
+		return &github.Issue{
+			Number: &no,
+		}, nil
+	}
+
+	t.Run("at first, create 6 issues", func(t *testing.T) {
+		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
+		gt.Equal(t, ts.ghApp.createIssueCount, 6)
+		gt.Equal(t, ts.ghApp.closeIssueCount, 0)
+	})
+
+	t.Run("at second, no issue created and closed", func(t *testing.T) {
+		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
+		gt.Equal(t, ts.ghApp.createIssueCount, 6)
+		gt.Equal(t, ts.ghApp.closeIssueCount, 0)
+	})
+
+	t.Run("at third, close 1 issues", func(t *testing.T) {
+		println("[1]", report.Runs[0].Results[0].RuleID)
+		report.Runs[0].Results = report.Runs[0].Results[1:]
+		ts.ghApp.closeIssue = func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
+			gt.Equal(t, repo.Owner, "m-mizutani")
+			gt.Equal(t, repo.Name, "ghaudit")
+			gt.Equal(t, issueNo, targetIssueNo)
+			return nil
+		}
+
+		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
+		gt.Equal(t, ts.ghApp.createIssueCount, 6)
+		gt.Equal(t, ts.ghApp.closeIssueCount, 1)
+	})
 }

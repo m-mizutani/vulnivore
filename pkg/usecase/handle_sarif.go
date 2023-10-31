@@ -24,24 +24,23 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 	}
 	existsRecordMap := make(map[model.RecordID]*model.VulnRecord, len(existsRecords))
 	for i, record := range existsRecords {
-		existsRecordMap[record.VulnRecordKey.RecordID()] = &existsRecords[i]
+		existsRecordMap[record.RecordID] = &existsRecords[i]
 	}
 
 	for _, run := range report.Runs {
 		for _, result := range run.Results {
 			for _, loc := range result.Locations {
-				key := &model.SarifKey{
-					RepoKey:  model.RepoKey{ID: repo.RepoID},
+				recordID := model.SarifKey{
 					VulnID:   result.RuleID,
 					Location: loc.Message.Text,
-				}
-				existsRecord := existsRecords.Find(key)
+				}.RecordID()
+				existsRecord := existsRecords.Find(recordID)
 				if existsRecord != nil {
-					delete(existsRecordMap, key.RecordID())
+					delete(existsRecordMap, recordID)
 					continue
 				}
 
-				contents, err := resultSarifToIssueContents(defaultIssueBodyTmpl, run.Tool, result)
+				contents, err := resultSarifToIssueContents(defaultSarifIssueBodyTmpl, run.Tool, result)
 				if err != nil {
 					return err
 				}
@@ -57,12 +56,13 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				}
 
 				newRecord := model.VulnRecord{
-					VulnRecordKey: key,
+					RecordID: recordID,
 
+					RepoID:     repo.RepoID,
 					Owner:      repo.Owner,
 					RepoName:   repo.Name,
 					IssueID:    newIssue.GetNumber(),
-					IssueState: "open",
+					IssueState: newIssue.GetState(),
 				}
 
 				if err := x.clients.Database().PutVulnRecords(ctx, []model.VulnRecord{newRecord}); err != nil {
@@ -86,13 +86,13 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 	return nil
 }
 
-//go:embed templates/github_issue_body.md
+//go:embed templates/sarif_github_issue_body.md
 var githubIssueBodyTmpl string
 
-var defaultIssueBodyTmpl *template.Template
+var defaultSarifIssueBodyTmpl *template.Template
 
 func init() {
-	defaultIssueBodyTmpl = template.Must(template.New("issue").Parse(githubIssueBodyTmpl))
+	defaultSarifIssueBodyTmpl = template.Must(template.New("issue").Parse(githubIssueBodyTmpl))
 }
 
 func resultSarifToIssueContents(tmpl *template.Template, tool *sarif.Tool, result *sarif.Result) (*model.GitHubIssueContents, error) {

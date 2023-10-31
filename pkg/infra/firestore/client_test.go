@@ -29,31 +29,31 @@ func TestFirestorePutAndGet(t *testing.T) {
 
 	records := []model.VulnRecord{
 		{
-			VulnRecordKey: &model.SarifKey{
-				RepoKey:  model.RepoKey{ID: repo1},
+			RecordID: (&model.SarifKey{
 				VulnID:   "CVE-1890-1234",
 				Location: uuid.NewString(),
-			},
+			}).RecordID(),
+			RepoID:   repo1,
 			Owner:    "m-mizutani",
 			RepoName: "zatsu",
 			IssueID:  2,
 		},
 		{
-			VulnRecordKey: &model.SarifKey{
-				RepoKey:  model.RepoKey{ID: repo1},
+			RecordID: (&model.SarifKey{
 				VulnID:   "CVE-1890-5678",
 				Location: uuid.NewString(),
-			},
+			}).RecordID(),
+			RepoID:   repo1,
 			Owner:    "m-mizutani",
 			RepoName: "zatsu",
 			IssueID:  3,
 		},
 		{
-			VulnRecordKey: &model.SarifKey{
-				RepoKey:  model.RepoKey{ID: repo2},
+			RecordID: (&model.SarifKey{
 				VulnID:   "CVE-1999-0731",
 				Location: uuid.NewString(),
-			},
+			}).RecordID(),
+			RepoID:   repo2,
 			Owner:    "m-mizutani",
 			RepoName: "zatsu",
 			IssueID:  4,

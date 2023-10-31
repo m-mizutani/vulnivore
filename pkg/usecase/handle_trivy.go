@@ -49,7 +49,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 		existsRecordMap[record.RecordID] = &existsRecords[i]
 	}
 
-	for _, result := range report.Results {
+	for ri, result := range report.Results {
 		switch result.Class {
 		case types.ClassOSPkg:
 		case types.ClassLangPkg:
@@ -60,7 +60,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 			continue
 		}
 
-		for _, vuln := range result.Vulnerabilities {
+		for vi, vuln := range result.Vulnerabilities {
 			var tmpl *template.Template
 			var recordID model.RecordID
 
@@ -93,7 +93,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 				continue
 			}
 
-			contents, err := buildTrivyVulnContents(tmpl, &report.Metadata, &result, &vuln)
+			contents, err := buildTrivyVulnContents(tmpl, &report.Metadata, &report.Results[ri], &result.Vulnerabilities[vi])
 			if err != nil {
 				return err
 			}

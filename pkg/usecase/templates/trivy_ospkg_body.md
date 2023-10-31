@@ -17,7 +17,8 @@
 | Vendor | Version | Vector |Score |
 | --- | --- | --- | --- |
 {{ range $vendor, $cvss := .Vuln.CVSS }}{{ if $cvss.V3Vector }}| {{ $vendor }} | V3 | `{{ $cvss.V3Vector }}` | {{ $cvss.V3Score }} |
-{{ end }}{{ if $cvss.V2Vector }}| {{ $vendor }} | V2 | `{{ $cvss.V2Vector }}` | {{ $cvss.V2Score }} |{{ end }}{{ end }}
+{{ end }}{{ if $cvss.V2Vector }}| {{ $vendor }} | V2 | `{{ $cvss.V2Vector }}` | {{ $cvss.V2Score }} |
+{{ end }}{{ end }}
 
 # References
 

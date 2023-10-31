@@ -43,5 +43,5 @@ func TestTrivyOSPkgTemplate(t *testing.T) {
 		&report.Results[0],
 		&report.Results[0].Vulnerabilities[0])).NoError(t)
 	gt.S(t, issue.Title).Contains("CVE-2021-33574")
-	gt.NoError(t, os.WriteFile("out/ghaudit.trivy.ospkg.md", []byte(issue.Body), 0644))
+	gt.NoError(t, os.WriteFile("out/ghaudit.trivy.ospkg.md", []byte(issue.Body), 0666))
 }

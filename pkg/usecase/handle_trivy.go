@@ -50,23 +50,23 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 	}
 
 	for ri, result := range report.Results {
+		var tmpl *template.Template
+
 		switch result.Class {
 		case types.ClassOSPkg:
+			tmpl = defaultTrivyOSPkgTmpl
 		case types.ClassLangPkg:
-			// skip
-
+			tmpl = defaultTrivyLangPkgTmpl
 		default:
 			ctx.Logger().Warn("unsupported trivy result class", "class", result.Class)
 			continue
 		}
 
 		for vi, vuln := range result.Vulnerabilities {
-			var tmpl *template.Template
 			var recordID model.RecordID
 
 			switch result.Class {
 			case types.ClassOSPkg:
-				tmpl = defaultTrivyOSPkgTmpl
 				recordID = model.TrivyOSPkgKey{
 					VulnID:  vuln.VulnerabilityID,
 					OSType:  string(result.Type),
@@ -74,7 +74,6 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 				}.RecordID()
 
 			case types.ClassLangPkg:
-				tmpl = defaultTrivyLangPkgTmpl
 				recordID = model.TrivyLangPkgKey{
 					VulnID:  vuln.VulnerabilityID,
 					Target:  result.Target,

@@ -49,6 +49,7 @@ func New(uc interfaces.UseCase) *Server {
 			r.Route("/action", func(r chi.Router) {
 				r.Use(authGitHubAction)
 				r.Post("/sarif", api(recvGitHubActionSARIF))
+				r.Post("/trivy", api(recvGitHubActionTrivy))
 			})
 			r.Route("/app", func(r chi.Router) {
 				r.Post("/event", api(recvGitHubAppEvent))

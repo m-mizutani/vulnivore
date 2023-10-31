@@ -2,8 +2,21 @@ package usecase
 
 import "text/template"
 
-var ResultToIssueContents = resultToIssueContents
+var (
+	ResultSarifToIssueContents = resultSarifToIssueContents
+)
 
-func DefaultIssueBodyTmpl() *template.Template {
-	return defaultIssueBodyTmpl
+func DefaultSarifIssueBodyTmpl() *template.Template {
+	return defaultSarifIssueBodyTmpl
+}
+
+var (
+	BuildTrivyVulnContents = buildTrivyVulnContents
+)
+
+func DefaultTrivyLangPkgTmpl() *template.Template {
+	return defaultTrivyLangPkgTmpl
+}
+func DefaultTrivyOSPkgTmpl() *template.Template {
+	return defaultTrivyOSPkgTmpl
 }

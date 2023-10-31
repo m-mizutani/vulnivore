@@ -90,7 +90,7 @@ func (x *client) PutVulnRecords(ctx *model.Context, vulns []model.VulnRecord) er
 			strID := fmt.Sprintf("%d", vuln.RepoID)
 			collection := colRef.Doc(strID).Collection("records")
 
-			doc := collection.Doc(vuln.RecordID())
+			doc := collection.Doc(string(vuln.RecordID))
 			if err := tx.Create(doc, vuln); err != nil {
 				return goerr.Wrap(err, "failed to create vuln")
 			}

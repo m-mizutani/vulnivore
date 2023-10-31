@@ -9,6 +9,8 @@ type (
 	GitHubAppInstallID int64
 	GitHubPrivateKey   string
 	GitHubSecret       string
+
+	RecordID string
 )
 
 func (x GitHubRepoID) String() string     { return fmt.Sprintf("%d", x) }

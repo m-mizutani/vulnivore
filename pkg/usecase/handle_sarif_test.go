@@ -32,7 +32,7 @@ func TestResultToIssueContents(t *testing.T) {
 		gt.Equal(t, v.Tool.Driver.Name, "Trivy")
 	})
 
-	issue := gt.R1(usecase.ResultToIssueContents(usecase.DefaultIssueBodyTmpl(), report.Runs[0].Tool, report.Runs[0].Results[0])).NoError(t)
+	issue := gt.R1(usecase.ResultSarifToIssueContents(usecase.DefaultSarifIssueBodyTmpl(), report.Runs[0].Tool, report.Runs[0].Results[0])).NoError(t)
 	gt.Equal(t, issue.Title, "CVE-2011-3374: library/postgres: apt@2.2.4: It was found that apt-key in apt, all versions, do not correctly valid ...")
 	gt.S(t, issue.Body).
 		Contains("library/postgres: apt@2.2.4").
@@ -53,11 +53,11 @@ func TestHandleSarif(t *testing.T) {
 			countIssueCreate: 6,
 			putShouldContain: []model.VulnRecord{
 				{
-					VulnRecordKey: model.VulnRecordKey{
-						RepoID:   4321,
+					RecordID: (&model.SarifKey{
 						VulnID:   "CVE-2022-28948",
 						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
-					},
+					}).RecordID(),
+					RepoID:     4321,
 					Owner:      "m-mizutani",
 					RepoName:   "vulnivore",
 					IssueID:    42,
@@ -70,11 +70,11 @@ func TestHandleSarif(t *testing.T) {
 			countIssueCreate: 5,
 			putShouldNotContain: []model.VulnRecord{
 				{
-					VulnRecordKey: model.VulnRecordKey{
-						RepoID:   4321,
+					RecordID: (&model.SarifKey{
 						VulnID:   "CVE-2022-28948",
 						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
-					},
+					}).RecordID(),
+					RepoID:     4321,
 					Owner:      "m-mizutani",
 					RepoName:   "vulnivore",
 					IssueID:    42,
@@ -83,11 +83,11 @@ func TestHandleSarif(t *testing.T) {
 			},
 			getWillReturn: []model.VulnRecord{
 				{
-					VulnRecordKey: model.VulnRecordKey{
-						RepoID:   4321,
+					RecordID: (&model.SarifKey{
 						VulnID:   "CVE-2022-28948",
 						Location: "ghaudit: gopkg.in/yaml.v3@v3.0.0-20210107192922-496545a6307b",
-					},
+					}).RecordID(),
+					RepoID:     4321,
 					Owner:      "m-mizutani",
 					RepoName:   "vulnivore",
 					IssueID:    42,
@@ -100,7 +100,7 @@ func TestHandleSarif(t *testing.T) {
 	for title, tc := range testCases {
 		t.Run(title, func(t *testing.T) {
 			var calledGet, calledPut int
-			foundRecords := map[model.VulnRecordKey]struct{}{}
+			foundRecords := map[model.RecordID]struct{}{}
 			dbClient := &dbMock{
 				getVulnRecords: func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
 					calledGet++
@@ -112,9 +112,9 @@ func TestHandleSarif(t *testing.T) {
 					at := gt.A(t, vulns).Length(1)
 
 					for _, v := range tc.putShouldContain {
-						if vulns[0].VulnRecordKey == v.VulnRecordKey {
+						if vulns[0].RecordID == v.RecordID {
 							gt.Equal(t, vulns[0], v)
-							foundRecords[v.VulnRecordKey] = struct{}{}
+							foundRecords[v.RecordID] = struct{}{}
 						}
 					}
 					for _, v := range tc.putShouldNotContain {
@@ -135,6 +135,7 @@ func TestHandleSarif(t *testing.T) {
 
 					return &github.Issue{
 						Number: &issueID,
+						State:  github.String("open"),
 					}, nil
 				},
 			}

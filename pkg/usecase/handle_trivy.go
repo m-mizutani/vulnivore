@@ -28,12 +28,6 @@ func init() {
 	defaultTrivyLangPkgTmpl = template.Must(template.New("issue").Parse(trivyLangPkgTemplate))
 }
 
-type trivyResultMetadata struct {
-	Target string
-	Class  string
-	Type   string
-}
-
 func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 	repo := ctx.GitHubRepo()
 	if repo == nil {

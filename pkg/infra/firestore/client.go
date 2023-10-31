@@ -87,10 +87,10 @@ func (x *client) PutVulnRecords(ctx *model.Context, vulns []model.VulnRecord) er
 	colRef := x.client.Collection(x.collection)
 	err := x.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		for _, vuln := range vulns {
-			strID := fmt.Sprintf("%d", vuln.RepoID)
+			strID := fmt.Sprintf("%d", vuln.RepoID())
 			collection := colRef.Doc(strID).Collection("records")
 
-			doc := collection.Doc(vuln.RecordID())
+			doc := collection.Doc(string(vuln.RecordID()))
 			if err := tx.Create(doc, vuln); err != nil {
 				return goerr.Wrap(err, "failed to create vuln")
 			}

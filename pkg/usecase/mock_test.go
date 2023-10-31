@@ -26,7 +26,7 @@ func (x *dbMock) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (
 
 	var resp []model.VulnRecord
 	for _, r := range x.records {
-		if r.RepoID == repoID {
+		if r.RepoID() == repoID {
 			resp = append(resp, r)
 		}
 	}

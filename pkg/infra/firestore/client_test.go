@@ -29,8 +29,8 @@ func TestFirestorePutAndGet(t *testing.T) {
 
 	records := []model.VulnRecord{
 		{
-			VulnRecordKey: model.VulnRecordKey{
-				RepoID:   repo1,
+			VulnRecordKey: &model.SarifKey{
+				RepoKey:  model.RepoKey{ID: repo1},
 				VulnID:   "CVE-1890-1234",
 				Location: uuid.NewString(),
 			},
@@ -39,8 +39,8 @@ func TestFirestorePutAndGet(t *testing.T) {
 			IssueID:  2,
 		},
 		{
-			VulnRecordKey: model.VulnRecordKey{
-				RepoID:   repo1,
+			VulnRecordKey: &model.SarifKey{
+				RepoKey:  model.RepoKey{ID: repo1},
 				VulnID:   "CVE-1890-5678",
 				Location: uuid.NewString(),
 			},
@@ -49,8 +49,8 @@ func TestFirestorePutAndGet(t *testing.T) {
 			IssueID:  3,
 		},
 		{
-			VulnRecordKey: model.VulnRecordKey{
-				RepoID:   repo2,
+			VulnRecordKey: &model.SarifKey{
+				RepoKey:  model.RepoKey{ID: repo2},
 				VulnID:   "CVE-1999-0731",
 				Location: uuid.NewString(),
 			},

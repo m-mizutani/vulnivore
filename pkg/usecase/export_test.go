@@ -2,7 +2,7 @@ package usecase
 
 import "text/template"
 
-var ResultToIssueContents = resultToIssueContents
+var ResultSarifToIssueContents = resultSarifToIssueContents
 
 func DefaultIssueBodyTmpl() *template.Template {
 	return defaultIssueBodyTmpl

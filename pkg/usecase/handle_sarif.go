@@ -22,26 +22,26 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 	if err != nil {
 		return err
 	}
-	existsRecordMap := make(map[model.VulnRecordKey]*model.VulnRecord, len(existsRecords))
+	existsRecordMap := make(map[model.RecordID]*model.VulnRecord, len(existsRecords))
 	for i, record := range existsRecords {
-		existsRecordMap[record.VulnRecordKey] = &existsRecords[i]
+		existsRecordMap[record.VulnRecordKey.RecordID()] = &existsRecords[i]
 	}
 
 	for _, run := range report.Runs {
 		for _, result := range run.Results {
 			for _, loc := range result.Locations {
-				key := model.VulnRecordKey{
-					RepoID:   repo.RepoID,
+				key := &model.SarifKey{
+					RepoKey:  model.RepoKey{ID: repo.RepoID},
 					VulnID:   result.RuleID,
 					Location: loc.Message.Text,
 				}
 				existsRecord := existsRecords.Find(key)
 				if existsRecord != nil {
-					delete(existsRecordMap, key)
+					delete(existsRecordMap, key.RecordID())
 					continue
 				}
 
-				contents, err := resultToIssueContents(defaultIssueBodyTmpl, run.Tool, result)
+				contents, err := resultSarifToIssueContents(defaultIssueBodyTmpl, run.Tool, result)
 				if err != nil {
 					return err
 				}
@@ -95,7 +95,7 @@ func init() {
 	defaultIssueBodyTmpl = template.Must(template.New("issue").Parse(githubIssueBodyTmpl))
 }
 
-func resultToIssueContents(tmpl *template.Template, tool *sarif.Tool, result *sarif.Result) (*model.GitHubIssueContents, error) {
+func resultSarifToIssueContents(tmpl *template.Template, tool *sarif.Tool, result *sarif.Result) (*model.GitHubIssueContents, error) {
 	rule := tool.Driver.Rules[result.RuleIndex]
 	input := struct {
 		Tool   *sarif.Tool

@@ -63,7 +63,7 @@ func newTestDump() *cli.Command {
 		Action: func(c *cli.Context) error {
 			var report types.Report
 
-			fd, err := os.Open(inputFile)
+			fd, err := os.Open(filepath.Clean(inputFile))
 			if err != nil {
 				return goerr.Wrap(err, "Failed to open input file")
 			}

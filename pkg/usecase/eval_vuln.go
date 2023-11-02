@@ -14,7 +14,7 @@ import (
 
 func DumpTrivyTestData(report *types.Report, baseDir string) error {
 	dir := filepath.Join(filepath.Clean(baseDir), "trivy")
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		if !os.IsExist(err) {
 			return goerr.Wrap(err, "Failed to mkdir")
 		}
@@ -22,7 +22,7 @@ func DumpTrivyTestData(report *types.Report, baseDir string) error {
 
 	for i, result := range report.Results {
 		for _, vuln := range result.Vulnerabilities {
-			d := model.NewEvalInputTrivyVuln(report, &result, &vuln)
+			d := model.NewEvalInputTrivyVuln(*report, result, vuln)
 			filePath := filepath.Join(
 				dir,
 				fmt.Sprintf("result_%d", i),
@@ -31,7 +31,7 @@ func DumpTrivyTestData(report *types.Report, baseDir string) error {
 			)
 
 			dirPath := filepath.Dir(filePath)
-			if err := os.MkdirAll(dirPath, 0755); err != nil {
+			if err := os.MkdirAll(dirPath, 0750); err != nil {
 				if !os.IsExist(err) {
 					return goerr.Wrap(err, "Failed to mkdir")
 				}

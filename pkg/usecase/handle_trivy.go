@@ -89,7 +89,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 			// Eval policy
 			var evalResult model.EvalOutput
 			{
-				input := model.NewEvalInputTrivyVuln(report, &result, &vuln)
+				input := model.NewEvalInputTrivyVuln(*report, result, vuln)
 				if err := x.clients.Policy().Query(ctx, "trivy", input, &evalResult); err != nil {
 					return err
 				}

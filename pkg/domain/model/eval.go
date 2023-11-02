@@ -14,7 +14,7 @@ type EvalOutput struct {
 	Assignees []string `json:"assignees"`
 }
 
-func NewEvalInputTrivyVuln(report *types.Report, result *types.Result, vuln *types.DetectedVulnerability) *EvalInputTrivyVuln {
+func NewEvalInputTrivyVuln(report types.Report, result types.Result, vuln types.DetectedVulnerability) *EvalInputTrivyVuln {
 	tmpResult := types.Result{
 		Target: result.Target,
 		Class:  result.Class,
@@ -23,6 +23,6 @@ func NewEvalInputTrivyVuln(report *types.Report, result *types.Result, vuln *typ
 	return &EvalInputTrivyVuln{
 		Metadata: &report.Metadata,
 		Result:   &tmpResult,
-		Vuln:     vuln,
+		Vuln:     &vuln,
 	}
 }

@@ -24,6 +24,7 @@ func newServe() *cli.Command {
 		addr      string
 		ghApp     config.GitHubApp
 		firestore config.Firestore
+		policy    config.Policy
 	)
 
 	flags := []cli.Flag{
@@ -38,6 +39,7 @@ func newServe() *cli.Command {
 	}
 	flags = append(flags, ghApp.Flags()...)
 	flags = append(flags, firestore.Flags()...)
+	flags = append(flags, policy.Flags()...)
 
 	return &cli.Command{
 		Name:    "serve",
@@ -57,9 +59,15 @@ func newServe() *cli.Command {
 				return err
 			}
 
+			policyClient, err := policy.NewPolicy()
+			if err != nil {
+				return err
+			}
+
 			clients := infra.New(
 				infra.WithGitHubApp(ghClient),
 				infra.WithDB(fsClient),
+				infra.WithPolicy(policyClient),
 			)
 
 			uc := usecase.New(clients)

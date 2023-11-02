@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/google/go-github/v56/github"
 	"github.com/m-mizutani/goerr"
@@ -152,7 +153,7 @@ func newTestRun() *cli.Command {
 
 			// Read input file (trivy scan result)
 			{
-				fd, err := os.Open(inputFile)
+				fd, err := os.Open(filepath.Clean(inputFile))
 				if err != nil {
 					return goerr.Wrap(err, "Failed to open input file")
 				}
@@ -212,7 +213,7 @@ func newTestRun() *cli.Command {
 					Results: results,
 				}
 
-				out, err := os.Create(outputFile)
+				out, err := os.Create(filepath.Clean(outputFile))
 				if err != nil {
 					return err
 				}

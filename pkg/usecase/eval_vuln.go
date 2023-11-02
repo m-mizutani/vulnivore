@@ -37,7 +37,7 @@ func DumpTrivyTestData(report *types.Report, baseDir string) error {
 				}
 			}
 
-			fd, err := os.Create(filePath)
+			fd, err := os.Create(filepath.Clean(filePath))
 			if err != nil {
 				return goerr.Wrap(err, "Failed to create file")
 			}

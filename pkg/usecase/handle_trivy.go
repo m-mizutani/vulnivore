@@ -80,6 +80,12 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 				continue
 			}
 
+			existsRecord := existsRecords.Find(recordID)
+			if existsRecord != nil {
+				delete(existsRecordMap, recordID)
+				continue
+			}
+
 			// Eval policy
 			var evalResult model.EvalOutput
 			{
@@ -87,12 +93,9 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 				if err := x.clients.Policy().Query(ctx, "trivy", input, &evalResult); err != nil {
 					return err
 				}
-			}
-
-			existsRecord := existsRecords.Find(recordID)
-			if existsRecord != nil {
-				delete(existsRecordMap, recordID)
-				continue
+				if evalResult.Action == "ignore" {
+					continue // skip
+				}
 			}
 
 			contents, err := buildTrivyVulnContents(

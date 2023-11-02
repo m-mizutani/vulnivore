@@ -40,6 +40,18 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 					continue
 				}
 
+				// Eval policy
+				var evalResult model.EvalOutput
+				{
+					input := model.NewEvalInputSarif(*report, *run, *result, *loc)
+					if err := x.clients.Policy().Query(ctx, "sarif", input, &evalResult); err != nil {
+						return err
+					}
+					if evalResult.Action == "ignore" {
+						continue // skip
+					}
+				}
+
 				contents, err := resultSarifToIssueContents(defaultSarifIssueBodyTmpl, run.Tool, result)
 				if err != nil {
 					return err
@@ -48,6 +60,8 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				issue := &model.GitHubIssue{
 					GitHubRepo:          *repo,
 					GitHubIssueContents: *contents,
+					Assignees:           evalResult.Assignees,
+					Labels:              evalResult.Labels,
 				}
 
 				newIssue, err := x.clients.GitHubApp().CreateIssue(ctx, issue)

@@ -125,6 +125,7 @@ func newConsoleLogger(w io.Writer, level slog.Level) *slog.Logger {
 		clog.WithLevel(level),
 		clog.WithReplaceAttr(filter),
 		clog.WithSource(true),
+		clog.WithPrinter(clog.LinearPrinter),
 		// clog.WithTimeFmt("2006-01-02 15:04:05"),
 		clog.WithColorMap(&clog.ColorMap{
 			Level: map[slog.Level]*color.Color{

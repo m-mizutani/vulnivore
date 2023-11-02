@@ -24,6 +24,7 @@ func New() *cli.App {
 		},
 		Commands: []*cli.Command{
 			newServe(),
+			newTest(),
 		},
 	}
 

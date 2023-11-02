@@ -32,6 +32,8 @@ type GitHubRepo struct {
 type GitHubIssue struct {
 	GitHubRepo
 	GitHubIssueContents
+	Assignees []string
+	Labels    []string
 }
 
 type GitHubIssueContents struct {

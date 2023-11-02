@@ -23,4 +23,5 @@ go.work
 .vscode
 tmp
 /pkg/usecase/out/*.md
+/testdata
 

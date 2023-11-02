@@ -15,6 +15,7 @@ import (
 	"github.com/m-mizutani/vulnivore/pkg/domain/interfaces"
 	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 	"github.com/m-mizutani/vulnivore/pkg/infra"
+	"github.com/m-mizutani/vulnivore/pkg/infra/githubapp"
 	"github.com/m-mizutani/vulnivore/pkg/usecase"
 	"github.com/securego/gosec/v2/report/sarif"
 )
@@ -125,8 +126,8 @@ func TestHandleSarif(t *testing.T) {
 			}
 
 			var calledCreateIssue int
-			ghApp := &ghAppMock{
-				createIssue: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+			ghApp := &githubapp.Mock{
+				CreateIssueMock: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
 					calledCreateIssue++
 					issueID := 199
 					if strings.Contains(issue.Body, "CVE-2022-28948") {
@@ -168,7 +169,7 @@ func TestHandleSarif(t *testing.T) {
 type testSuite struct {
 	uc       interfaces.UseCase
 	dbClient *dbMock
-	ghApp    *ghAppMock
+	ghApp    *githubapp.Mock
 }
 
 func setupTestSuite(t *testing.T) *testSuite {
@@ -180,17 +181,17 @@ func setupTestSuite(t *testing.T) *testSuite {
 			return nil
 		},
 	}
-	ghApp := &ghAppMock{
-		createIssue: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+	ghApp := &githubapp.Mock{
+		CreateIssueMock: func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
 			no := rand.Intn(100000)
 			return &github.Issue{
 				Number: &no,
 			}, nil
 		},
-		closeIssue: func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
+		CloseIssueMock: func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
 			return nil
 		},
-		validateEventPayload: func(r *http.Request) ([]byte, error) {
+		ValidateEventPayloadMock: func(r *http.Request) ([]byte, error) {
 			data, err := io.ReadAll(r.Body)
 			if err != nil {
 				return nil, err
@@ -226,7 +227,7 @@ func TestCloseResolvedVuln(t *testing.T) {
 	)
 
 	var targetIssueNo int
-	ts.ghApp.createIssue = func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
+	ts.ghApp.CreateIssueMock = func(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
 		no := rand.Intn(100000)
 		if strings.Contains(issue.Title, "CVE-2022-28946") {
 			t.Log("target issue no:", no)
@@ -239,20 +240,20 @@ func TestCloseResolvedVuln(t *testing.T) {
 
 	t.Run("at first, create 6 issues", func(t *testing.T) {
 		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
-		gt.Equal(t, ts.ghApp.createIssueCount, 6)
-		gt.Equal(t, ts.ghApp.closeIssueCount, 0)
+		gt.Equal(t, ts.ghApp.CreateIssueCount, 6)
+		gt.Equal(t, ts.ghApp.CloseIssueCount, 0)
 	})
 
 	t.Run("at second, no issue created and closed", func(t *testing.T) {
 		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
-		gt.Equal(t, ts.ghApp.createIssueCount, 6)
-		gt.Equal(t, ts.ghApp.closeIssueCount, 0)
+		gt.Equal(t, ts.ghApp.CreateIssueCount, 6)
+		gt.Equal(t, ts.ghApp.CloseIssueCount, 0)
 	})
 
 	t.Run("at third, close 1 issues", func(t *testing.T) {
 		println("[1]", report.Runs[0].Results[0].RuleID)
 		report.Runs[0].Results = report.Runs[0].Results[1:]
-		ts.ghApp.closeIssue = func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
+		ts.ghApp.CloseIssueMock = func(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
 			gt.Equal(t, repo.Owner, "m-mizutani")
 			gt.Equal(t, repo.Name, "ghaudit")
 			gt.Equal(t, issueNo, targetIssueNo)
@@ -260,7 +261,7 @@ func TestCloseResolvedVuln(t *testing.T) {
 		}
 
 		gt.NoError(t, ts.uc.HandleSarif(ctx, &report))
-		gt.Equal(t, ts.ghApp.createIssueCount, 6)
-		gt.Equal(t, ts.ghApp.closeIssueCount, 1)
+		gt.Equal(t, ts.ghApp.CreateIssueCount, 6)
+		gt.Equal(t, ts.ghApp.CloseIssueCount, 1)
 	})
 }

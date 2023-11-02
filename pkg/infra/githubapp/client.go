@@ -52,8 +52,12 @@ func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*git
 	input := &github.IssueRequest{
 		Title: github.String(issue.Title),
 		Body:  github.String(issue.Body),
-		// Assignee: github.String("username"),
-		// Labels:   &[]string{"bug"},
+	}
+	if len(issue.Assignees) > 0 {
+		input.Assignees = &issue.Assignees
+	}
+	if len(issue.Labels) > 0 {
+		input.Labels = &issue.Labels
 	}
 
 	resp, _, err := client.Issues.Create(ctx, issue.Owner, issue.Name, input)

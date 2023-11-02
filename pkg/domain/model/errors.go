@@ -9,4 +9,6 @@ var (
 	// runtime error
 	ErrInvalidGitHubIDToken = goerr.New("invalid GitHub ID token")
 	ErrInvalidContext       = goerr.New("invalid context")
+
+	ErrNoPolicyResult = goerr.New("no policy result")
 )

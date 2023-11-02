@@ -1,21 +1,19 @@
-package usecase_test
+package infra
 
-import (
-	"github.com/m-mizutani/vulnivore/pkg/domain/model"
-)
+import "github.com/m-mizutani/vulnivore/pkg/domain/model"
 
-type dbMock struct {
-	getVulnRecordsCount int
+type DBMock struct {
+	GetVulnRecordsCount int
 	getVulnRecords      func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error)
 
-	putVulnRecordsCount int
+	PutVulnRecordsCount int
 	putVulnRecords      func(ctx *model.Context, vulns []model.VulnRecord) error
 
 	records []model.VulnRecord
 }
 
-func (x *dbMock) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
-	x.getVulnRecordsCount++
+func (x *DBMock) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
+	x.GetVulnRecordsCount++
 
 	if result, err := x.getVulnRecords(ctx, repoID); result != nil || err != nil {
 		return result, err
@@ -30,8 +28,8 @@ func (x *dbMock) GetVulnRecords(ctx *model.Context, repoID model.GitHubRepoID) (
 	return resp, nil
 }
 
-func (x *dbMock) PutVulnRecords(ctx *model.Context, vulns []model.VulnRecord) error {
-	x.putVulnRecordsCount++
+func (x *DBMock) PutVulnRecords(ctx *model.Context, vulns []model.VulnRecord) error {
+	x.PutVulnRecordsCount++
 	x.records = append(x.records, vulns...)
 	return x.putVulnRecords(ctx, vulns)
 }

@@ -17,3 +17,7 @@ type GitHubApp interface {
 	CloseIssue(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error
 	ValidateEventPayload(r *http.Request) ([]byte, error)
 }
+
+type Policy interface {
+	Query(ctx *model.Context, query string, input any, output any) error
+}

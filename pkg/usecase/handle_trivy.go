@@ -28,12 +28,6 @@ func init() {
 	defaultTrivyLangPkgTmpl = template.Must(template.New("issue").Parse(trivyLangPkgTemplate))
 }
 
-type trivyResultMetadata struct {
-	Target string
-	Class  string
-	Type   string
-}
-
 func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 	repo := ctx.GitHubRepo()
 	if repo == nil {
@@ -92,14 +86,40 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 				continue
 			}
 
-			contents, err := buildTrivyVulnContents(tmpl, &report.Metadata, &report.Results[ri], &result.Vulnerabilities[vi])
+			// Eval policy
+			var evalResult model.EvalOutput
+			{
+				input := model.NewEvalInputTrivyVuln(*report, result, vuln)
+				if err := x.clients.Policy().Query(ctx, "trivy", input, &evalResult); err != nil {
+					return err
+				}
+				if evalResult.Action == "ignore" {
+					continue // skip
+				}
+			}
+
+			contents, err := buildTrivyVulnContents(
+				tmpl,
+				&report.Metadata,
+				&report.Results[ri],
+				&result.Vulnerabilities[vi],
+			)
 			if err != nil {
 				return err
+			}
+			if contents == nil {
+				continue // skip
 			}
 
 			issue := &model.GitHubIssue{
 				GitHubRepo:          *repo,
 				GitHubIssueContents: *contents,
+			}
+			if len(evalResult.Labels) > 0 {
+				issue.Labels = evalResult.Labels
+			}
+			if len(evalResult.Assignees) > 0 {
+				issue.Assignees = evalResult.Assignees
 			}
 
 			newIssue, err := x.clients.GitHubApp().CreateIssue(ctx, issue)
@@ -141,7 +161,6 @@ func buildTrivyVulnContents(
 	result *types.Result,
 	vuln *types.DetectedVulnerability,
 ) (*model.GitHubIssueContents, error) {
-
 	input := struct {
 		Metadata *types.Metadata
 		Result   *types.Result

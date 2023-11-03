@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,55 +54,73 @@ func respondError(w http.ResponseWriter, status int, msg string) {
 	utils.SafeMarshal(w, data)
 }
 
-func authGitHubAction(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := toVulnivoreContext(r.Context())
+func validateGitHubIDToken(ctx context.Context, token string) (*model.GitHubRepo, error) {
+	set, err := jwk.Fetch(ctx, "https://token.actions.githubusercontent.com/.well-known/jwks")
+	if err != nil {
+		return nil, goerr.Wrap(err, "failed to fetch JWK")
+	}
 
-		authHdr := r.Header.Get("Authorization")
-		if authHdr == "" {
-			respondError(w, http.StatusUnauthorized, "Authorization header is missing")
-			return
-		}
+	tok, err := jwt.Parse([]byte(token), jwt.WithKeySet(set))
+	if err != nil {
+		return nil, goerr.Wrap(err, "failed to parse JWT")
+	}
 
-		authVal := strings.SplitN(authHdr, " ", 2)
-		if len(authVal) != 2 {
-			respondError(w, http.StatusUnauthorized, "invalid Authorization header")
-			return
-		}
+	return token2GitHubRepo(tok)
+}
 
-		if strings.ToLower(authVal[0]) != "bearer" {
-			respondError(w, http.StatusUnauthorized, "authorization type is not bearer")
-			return
-		}
+type validateFunc func(ctx context.Context, token string) (*model.GitHubRepo, error)
 
-		set, err := jwk.Fetch(r.Context(), "https://token.actions.githubusercontent.com/.well-known/jwks")
-		if err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to fetch JWK")
-			return
-		}
+func authGitHubAction(validate validateFunc) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := toVulnivoreContext(r.Context())
 
-		tok, err := jwt.Parse([]byte(authVal[1]), jwt.WithKeySet(set))
-		if err != nil {
-			utils.Logger().Warn("failed to parse JWT", slog.Any("err", err))
-			respondError(w, http.StatusUnauthorized, "failed to parse JWT")
-			return
-		}
+			authHdr := r.Header.Get("Authorization")
+			if authHdr == "" {
+				respondError(w, http.StatusUnauthorized, "Authorization header is missing")
+				return
+			}
 
-		repo, err := token2GitHubRepo(tok)
-		if err != nil {
-			utils.Logger().Warn("failed to parse JWT", slog.Any("err", err))
-			respondError(w, http.StatusUnauthorized, "failed to parse JWT")
-			return
-		}
+			authVal := strings.SplitN(authHdr, " ", 2)
+			if len(authVal) != 2 {
+				respondError(w, http.StatusUnauthorized, "invalid Authorization header")
+				return
+			}
 
-		ctx.Logger().Info("GitHub ID token is verified", slog.Any("repo", repo))
+			if strings.ToLower(authVal[0]) != "bearer" {
+				respondError(w, http.StatusUnauthorized, "authorization type is not bearer")
+				return
+			}
+			if len(authVal[1]) == 0 {
+				respondError(w, http.StatusUnauthorized, "token is empty")
+				return
+			}
 
-		ctx = ctx.New(
-			model.WithGitHubRepo(repo),
-		)
+			repo, err := validate(ctx, authVal[1])
+			if err != nil {
+				utils.Logger().Warn("failed to parse JWT", slog.Any("err", err))
+				respondError(w, http.StatusUnauthorized, "invalid GitHub ID token")
+				return
+			}
+			ctx.Logger().Info("GitHub ID token is verified", slog.Any("repo", repo))
 
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+			ctxOptions := []model.CtxOption{
+				model.WithGitHubRepo(repo),
+			}
+
+			if v := r.Header.Get("X-GitHub-Installation-ID"); v != "" {
+				id, err := strconv.ParseInt(v, 10, 64)
+				if err != nil {
+					respondError(w, http.StatusBadRequest, "X-GitHub-Installation-ID must be integer")
+				}
+				ctxOptions = append(ctxOptions, model.WithGitHubInstallationID(id))
+			}
+
+			ctx = ctx.New(ctxOptions...)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }
 
 func token2GitHubRepo(tok jwt.Token) (*model.GitHubRepo, error) {

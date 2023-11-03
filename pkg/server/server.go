@@ -47,7 +47,7 @@ func New(uc interfaces.UseCase) *Server {
 	route.Route("/webhook", func(r chi.Router) {
 		r.Route("/github", func(r chi.Router) {
 			r.Route("/action", func(r chi.Router) {
-				r.Use(authGitHubAction)
+				r.Use(authGitHubAction(validateGitHubIDToken))
 				r.Post("/sarif", api(recvGitHubActionSARIF))
 				r.Post("/trivy", api(recvGitHubActionTrivy))
 			})

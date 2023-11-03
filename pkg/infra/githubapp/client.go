@@ -23,9 +23,14 @@ func New(cfg *model.GitHubApp) (*client, error) {
 	}, nil
 }
 
-func (x *client) setupClient() (*github.Client, error) {
+func (x *client) setupClient(ctx *model.Context) (*github.Client, error) {
+	installID := x.cfg.InstallID.Int64()
+	if v := ctx.GitHubInstallID(); v > 0 {
+		installID = v
+	}
+
 	tr := http.DefaultTransport
-	itr, err := ghinstallation.New(tr, x.cfg.AppID.Int64(), x.cfg.InstallID.Int64(), x.cfg.PrivateKey.Byte())
+	itr, err := ghinstallation.New(tr, x.cfg.AppID.Int64(), installID, x.cfg.PrivateKey.Byte())
 	if err != nil {
 		return nil, goerr.Wrap(err, "Failed to create GitHub App client").With("cfg", x.cfg)
 	}
@@ -43,7 +48,7 @@ func (x *client) ValidateEventPayload(r *http.Request) ([]byte, error) {
 }
 
 func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error) {
-	client, err := x.setupClient()
+	client, err := x.setupClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +74,7 @@ func (x *client) CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*git
 }
 
 func (x *client) CloseIssue(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error {
-	client, err := x.setupClient()
+	client, err := x.setupClient(ctx)
 	if err != nil {
 		return err
 	}

@@ -10,8 +10,9 @@ import (
 
 type Context struct {
 	context.Context
-	repo   *GitHubRepo
-	logger *slog.Logger
+	repo      *GitHubRepo
+	installID int64
+	logger    *slog.Logger
 }
 
 func NewContext(options ...CtxOption) *Context {
@@ -34,8 +35,15 @@ func (x *Context) New(options ...CtxOption) *Context {
 	return &ctx
 }
 
-func (x *Context) GitHubRepo() *GitHubRepo { return x.repo }
-func (x *Context) Logger() *slog.Logger    { return x.logger }
+func (x *Context) GitHubRepo() *GitHubRepo {
+	if x.repo == nil {
+		return nil
+	}
+	copied := *x.repo
+	return &copied
+}
+func (x *Context) GitHubInstallID() int64 { return x.installID }
+func (x *Context) Logger() *slog.Logger   { return x.logger }
 
 type CtxOption func(*Context)
 
@@ -48,6 +56,12 @@ func WithContext(ctx context.Context) CtxOption {
 func WithGitHubRepo(repo *GitHubRepo) CtxOption {
 	return func(c *Context) {
 		c.repo = repo
+	}
+}
+
+func WithGitHubInstallationID(id int64) CtxOption {
+	return func(c *Context) {
+		c.installID = id
 	}
 }
 

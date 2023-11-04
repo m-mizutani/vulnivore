@@ -47,7 +47,8 @@ func New(uc interfaces.UseCase) *Server {
 	route.Route("/webhook", func(r chi.Router) {
 		r.Route("/github", func(r chi.Router) {
 			r.Route("/action", func(r chi.Router) {
-				r.Use(authGitHubAction(validateGitHubIDToken))
+				r.Use(authGitHubAction(uc.ValidateGitHubIDToken))
+				r.Use(githubAppInstallationID)
 				r.Post("/sarif", api(recvGitHubActionSARIF))
 				r.Post("/trivy", api(recvGitHubActionTrivy))
 			})
@@ -64,4 +65,8 @@ func New(uc interfaces.UseCase) *Server {
 
 func (x *Server) Handler() http.Handler {
 	return x.mux
+}
+
+func (x *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	x.mux.ServeHTTP(w, r)
 }

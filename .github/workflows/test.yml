@@ -5,6 +5,9 @@ on: [push]
 jobs:
   testing:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout upstream repo
@@ -15,5 +18,11 @@ jobs:
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: "go.mod"
+      - id: get_token
+        run: |
+          IDTOKEN=$(curl -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" ${ACTIONS_ID_TOKEN_REQUEST_URL} -H "Accept: application/json; api-version=2.0" -H "Content-Type: application/json" -d "{}" | jq -r '.value')
+          echo "token=$IDTOKEN" >> "$GITHUB_OUTPUT"
       - name: Run test
+        env:
+          TEST_GITHUB_ID_TOKEN: ${{ steps.get_token.outputs.token }}
         run: go test ./...

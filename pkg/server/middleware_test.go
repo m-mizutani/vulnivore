@@ -41,18 +41,6 @@ func TestAuthGitHubAction(t *testing.T) {
 			expectToken: "gh_token",
 			expectCode:  http.StatusOK,
 		},
-		"valid: with install id": {
-			Header: http.Header{
-				"Authorization":            []string{"Bearer gh_token"},
-				"X-GitHub-Installation-Id": []string{"123"},
-			},
-			resp: &model.GitHubRepo{
-				RepoID: 5,
-			},
-			expectToken: "gh_token",
-			expectCode:  http.StatusOK,
-			expectID:    123,
-		},
 		"invalid: without auth header": {
 			Header:     http.Header{},
 			expectCode: http.StatusUnauthorized,
@@ -79,7 +67,7 @@ func TestAuthGitHubAction(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			validator := func(ctx context.Context, token string) (*model.GitHubRepo, error) {
+			validator := func(ctx *model.Context, token string) (*model.GitHubRepo, error) {
 				gt.Equal(t, tc.expectToken, token)
 				return tc.resp, tc.err
 			}

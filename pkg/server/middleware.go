@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,9 +8,6 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jwt"
-	"github.com/m-mizutani/goerr"
 	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 	"github.com/m-mizutani/vulnivore/pkg/utils"
 )
@@ -54,21 +50,7 @@ func respondError(w http.ResponseWriter, status int, msg string) {
 	utils.SafeMarshal(w, data)
 }
 
-func validateGitHubIDToken(ctx context.Context, token string) (*model.GitHubRepo, error) {
-	set, err := jwk.Fetch(ctx, "https://token.actions.githubusercontent.com/.well-known/jwks")
-	if err != nil {
-		return nil, goerr.Wrap(err, "failed to fetch JWK")
-	}
-
-	tok, err := jwt.Parse([]byte(token), jwt.WithKeySet(set))
-	if err != nil {
-		return nil, goerr.Wrap(err, "failed to parse JWT")
-	}
-
-	return token2GitHubRepo(tok)
-}
-
-type validateFunc func(ctx context.Context, token string) (*model.GitHubRepo, error)
+type validateFunc func(ctx *model.Context, token string) (*model.GitHubRepo, error)
 
 func authGitHubAction(validate validateFunc) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -104,48 +86,25 @@ func authGitHubAction(validate validateFunc) func(next http.Handler) http.Handle
 			}
 			ctx.Logger().Info("GitHub ID token is verified", slog.Any("repo", repo))
 
-			ctxOptions := []model.CtxOption{
-				model.WithGitHubRepo(repo),
-			}
-
-			if v := r.Header.Get("X-GitHub-Installation-ID"); v != "" {
-				id, err := strconv.ParseInt(v, 10, 64)
-				if err != nil {
-					respondError(w, http.StatusBadRequest, "X-GitHub-Installation-ID must be integer")
-				}
-				ctxOptions = append(ctxOptions, model.WithGitHubInstallationID(id))
-			}
-
-			ctx = ctx.New(ctxOptions...)
+			ctx = ctx.New(model.WithGitHubRepo(repo))
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func token2GitHubRepo(tok jwt.Token) (*model.GitHubRepo, error) {
-	var repo model.GitHubRepo
+func githubAppInstallationID(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := toVulnivoreContext(r.Context())
 
-	if v, ok := tok.Get("repository_id"); !ok {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository_id is not found")
-	} else if s, ok := v.(string); !ok {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository_id is not string").With("repository_id", v)
-	} else if repoID, err := strconv.ParseInt(s, 10, 64); err != nil {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository_id can not be parsed as number").With("repository_id", s)
-	} else {
-		repo.RepoID = model.GitHubRepoID(repoID)
-	}
+		if v := r.Header.Get("X-Vulnivore-Installation-ID"); v != "" {
+			id, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				respondError(w, http.StatusBadRequest, "X-Vulnivore-Installation-ID must be integer")
+			}
+			ctx = ctx.New(model.WithGitHubInstallationID(id))
+		}
 
-	if v, ok := tok.Get("repository"); !ok {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository is not found")
-	} else if r, ok := v.(string); !ok {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository is not string").With("repository", v)
-	} else if sep := strings.Split(r, "/"); len(sep) != 2 {
-		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository format is invalid").With("repository", r)
-	} else {
-		repo.Owner = sep[0]
-		repo.Name = sep[1]
-	}
-
-	return &repo, nil
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

@@ -173,8 +173,6 @@ github.com/lestrrat-go/jwx/v2 v2.0.15/go.mod h1:jBHyESp4e7QxfERM0UKkQ80/94paqNIE
 github.com/lestrrat-go/option v1.0.0/go.mod h1:5ZHFbivi4xwXxhxY9XHDe2FHo6/Z7WWmtT7T5nBBp3I=
 github.com/lestrrat-go/option v1.0.1 h1:oAzP2fvZGQKWkvHa1/SAcFolBEca1oN+mQ7eooNBEYU=
 github.com/lestrrat-go/option v1.0.1/go.mod h1:5ZHFbivi4xwXxhxY9XHDe2FHo6/Z7WWmtT7T5nBBp3I=
-github.com/m-mizutani/alertchain v0.0.13 h1:5CFqzYGgqAuzlvtkI9dyy2ELyXp18uBMSBDGAjQZllw=
-github.com/m-mizutani/alertchain v0.0.13/go.mod h1:hu1Z1DzbQo984kMxDChws72HW8ADZt2oXVMtLOvr5rU=
 github.com/m-mizutani/clog v0.0.4 h1:6hY5CzHwNS4zuJhF6puazYPtGeaEEGIbrD4Ccimyaow=
 github.com/m-mizutani/clog v0.0.4/go.mod h1:a2J7BlnXOkaMQ0fNeDBG3IyyyWnCnSKYH8ltHFNDcHE=
 github.com/m-mizutani/goerr v0.1.11 h1:noTEk8jNOVl/ST/Qfn0q7lMA13/ygzyl1PxaD4hHti4=

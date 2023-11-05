@@ -12,7 +12,6 @@ require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/google/uuid v1.3.1
 	github.com/lestrrat-go/jwx/v2 v2.0.15
-	github.com/m-mizutani/alertchain v0.0.13
 	github.com/m-mizutani/clog v0.0.4
 	github.com/m-mizutani/goerr v0.1.11
 	github.com/m-mizutani/gt v0.0.6-0.20230708234934-97ecdb8cc874

@@ -52,7 +52,7 @@ jobs:
         uses: aquasecurity/trivy-action@69cbbc0cbbf6a2b0bab8dcf0e9f2d7ead08e87e4 # master
         with:
           scan-type: "image"
-          image-ref: ${{ env.TAG_NAME }}
+          image-ref: ${{ env.GITHUB_IMAGE_NAME }}
           ignore-unfixed: true
           format: "json"
           output: "trivy-results.json"

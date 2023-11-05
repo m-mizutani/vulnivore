@@ -139,7 +139,6 @@ The output schema is standardized across all input formats. Here's what it inclu
 - `action` (string): This field indicates the action to be taken. It can be either `create` or `ignore`. If set to `create`, an issue will be created. If set to `ignore`, no action will be taken. By default, this field is set to `create`.
 - `labels` (set of string): This field allows you to set labels for the issue. By default, no labels are set and this field is empty.
 - `assignees` (set of string): This field allows you to assign the issue to specific individuals. By default, no individual is assigned and this field is empty.
-### SARIF
 
 ## License
 

@@ -12,22 +12,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/types"
 )
 
-//go:embed templates/trivy_ospkg_body.md
-var trivyOSPkgTemplate string
-
-//go:embed templates/trivy_langpkg_body.md
-var trivyLangPkgTemplate string
-
-var (
-	defaultTrivyOSPkgTmpl   *template.Template
-	defaultTrivyLangPkgTmpl *template.Template
-)
-
-func init() {
-	defaultTrivyOSPkgTmpl = template.Must(template.New("issue").Parse(trivyOSPkgTemplate))
-	defaultTrivyLangPkgTmpl = template.Must(template.New("issue").Parse(trivyLangPkgTemplate))
-}
-
 func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 	repo := ctx.GitHubRepo()
 	if repo == nil {
@@ -48,9 +32,9 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 
 		switch result.Class {
 		case types.ClassOSPkg:
-			tmpl = defaultTrivyOSPkgTmpl
+			tmpl = x.trivyOSPkgTemplate
 		case types.ClassLangPkg:
-			tmpl = defaultTrivyLangPkgTmpl
+			tmpl = x.trivyLangPkgTemplate
 		default:
 			ctx.Logger().Warn("unsupported trivy result class", "class", result.Class)
 			continue

@@ -172,7 +172,7 @@ type testSuite struct {
 	ghApp    *githubapp.Mock
 }
 
-func setupTestSuite(t *testing.T) *testSuite {
+func setupTestSuite(t *testing.T, options ...usecase.Option) *testSuite {
 	dbClient := &dbMock{
 		getVulnRecords: func(ctx *model.Context, repoID model.GitHubRepoID) (model.VulnRecords, error) {
 			return nil, nil
@@ -203,7 +203,7 @@ func setupTestSuite(t *testing.T) *testSuite {
 	uc := usecase.New(infra.New(
 		infra.WithDB(dbClient),
 		infra.WithGitHubApp(ghApp),
-	))
+	), options...)
 
 	return &testSuite{
 		uc:       uc,

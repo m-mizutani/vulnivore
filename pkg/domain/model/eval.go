@@ -18,14 +18,9 @@ type EvalInputTrivyVuln struct {
 }
 
 func NewEvalInputTrivyVuln(report types.Report, result types.Result, vuln types.DetectedVulnerability) *EvalInputTrivyVuln {
-	tmpResult := types.Result{
-		Target: result.Target,
-		Class:  result.Class,
-		Type:   result.Type,
-	}
 	return &EvalInputTrivyVuln{
 		Metadata: &report.Metadata,
-		Result:   &tmpResult,
+		Result:   &result,
 		Vuln:     &vuln,
 	}
 }

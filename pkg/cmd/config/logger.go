@@ -35,7 +35,7 @@ func (x *Logger) Flags() []cli.Flag {
 		&cli.StringFlag{
 			Name:        "log-format",
 			Aliases:     []string{"f"},
-			Value:       "text",
+			Value:       "json",
 			Usage:       "Log format [json, text]",
 			EnvVars:     []string{"VULNIVORE_LOG_FORMAT"},
 			Destination: &x.format,

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/go-github/v56/github"
 	"github.com/m-mizutani/goerr"
+	"github.com/m-mizutani/vulnivore/pkg/cmd/config"
 	"github.com/m-mizutani/vulnivore/pkg/domain/model"
 	"github.com/m-mizutani/vulnivore/pkg/infra"
 	"github.com/m-mizutani/vulnivore/pkg/infra/githubapp"
@@ -90,63 +91,69 @@ func newTestRun() *cli.Command {
 		repoID    int64
 		repoOwner string
 		repoName  string
+
+		tmpl config.TemplateConfig
 	)
+
+	flags := []cli.Flag{
+		&cli.StringFlag{
+			Name:        "input-file",
+			Aliases:     []string{"i"},
+			Usage:       "Input file path",
+			EnvVars:     []string{"VULNIVORE_INPUT_FILE"},
+			Destination: &inputFile,
+			Required:    true,
+		},
+
+		&cli.StringFlag{
+			Name:        "output-file",
+			Aliases:     []string{"o"},
+			Usage:       "Output file path ('-' for stdout))",
+			EnvVars:     []string{"VULNIVORE_OUTPUT_FILE"},
+			Destination: &outputFile,
+			Value:       "-",
+		},
+
+		&cli.StringFlag{
+			Name:        "policy-dir",
+			Aliases:     []string{"p"},
+			Usage:       "Policy directory path",
+			EnvVars:     []string{"VULNIVORE_POLICY_DIR"},
+			Destination: &policyDir,
+		},
+
+		&cli.Int64Flag{
+			Name:        "repo-id",
+			Category:    "Dummy GitHub repo data",
+			Usage:       "GitHub repository ID",
+			EnvVars:     []string{"VULNIVORE_REPO_ID"},
+			Destination: &repoID,
+			Value:       1234,
+		},
+		&cli.StringFlag{
+			Name:        "repo-owner",
+			Category:    "Dummy GitHub repo data",
+			Usage:       "GitHub repository owner",
+			EnvVars:     []string{"VULNIVORE_REPO_OWNER"},
+			Destination: &repoOwner,
+			Value:       "m-mizutani",
+		},
+		&cli.StringFlag{
+			Name:        "repo-name",
+			Category:    "Dummy GitHub repo data",
+			Usage:       "GitHub repository name",
+			EnvVars:     []string{"VULNIVORE_REPO_NAME"},
+			Destination: &repoName,
+			Value:       "vulnivore",
+		},
+	}
+
+	flags = append(flags, tmpl.Flags()...)
 
 	return &cli.Command{
 		Name:    "run",
 		Aliases: []string{"r"},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "input-file",
-				Aliases:     []string{"i"},
-				Usage:       "Input file path",
-				EnvVars:     []string{"VULNIVORE_INPUT_FILE"},
-				Destination: &inputFile,
-				Required:    true,
-			},
-
-			&cli.StringFlag{
-				Name:        "output-file",
-				Aliases:     []string{"o"},
-				Usage:       "Output file path ('-' for stdout))",
-				EnvVars:     []string{"VULNIVORE_OUTPUT_FILE"},
-				Destination: &outputFile,
-				Value:       "-",
-			},
-
-			&cli.StringFlag{
-				Name:        "policy-dir",
-				Aliases:     []string{"p"},
-				Usage:       "Policy directory path",
-				EnvVars:     []string{"VULNIVORE_POLICY_DIR"},
-				Destination: &policyDir,
-			},
-
-			&cli.Int64Flag{
-				Name:        "repo-id",
-				Category:    "Dummy GitHub repo data",
-				Usage:       "GitHub repository ID",
-				EnvVars:     []string{"VULNIVORE_REPO_ID"},
-				Destination: &repoID,
-				Value:       1234,
-			},
-			&cli.StringFlag{
-				Name:        "repo-owner",
-				Category:    "Dummy GitHub repo data",
-				Usage:       "GitHub repository owner",
-				EnvVars:     []string{"VULNIVORE_REPO_OWNER"},
-				Destination: &repoOwner,
-				Value:       "m-mizutani",
-			},
-			&cli.StringFlag{
-				Name:        "repo-name",
-				Category:    "Dummy GitHub repo data",
-				Usage:       "GitHub repository name",
-				EnvVars:     []string{"VULNIVORE_REPO_NAME"},
-				Destination: &repoName,
-				Value:       "vulnivore",
-			},
-		},
+		Flags:   flags,
 		Action: func(c *cli.Context) error {
 			var report types.Report
 			utils.Logger().Info("Start test run", "input", inputFile, "output", outputFile, "policy", policyDir)
@@ -192,7 +199,12 @@ func newTestRun() *cli.Command {
 				infraOpt = append(infraOpt, infra.WithPolicy(p))
 			}
 
-			uc := usecase.New(infra.New(infraOpt...))
+			ucOpt, err := tmpl.New()
+			if err != nil {
+				return err
+			}
+
+			uc := usecase.New(infra.New(infraOpt...), ucOpt...)
 			ctx := model.NewContext(
 				model.WithContext(c.Context),
 				model.WithGitHubRepo(&model.GitHubRepo{

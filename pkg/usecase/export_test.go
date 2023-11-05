@@ -4,19 +4,15 @@ import "text/template"
 
 var (
 	ResultSarifToIssueContents = resultSarifToIssueContents
+	BuildTrivyVulnContents     = buildTrivyVulnContents
 )
 
 func DefaultSarifIssueBodyTmpl() *template.Template {
 	return defaultSarifIssueBodyTmpl
 }
-
-var (
-	BuildTrivyVulnContents = buildTrivyVulnContents
-)
-
 func DefaultTrivyLangPkgTmpl() *template.Template {
-	return defaultTrivyLangPkgTmpl
+	return defaultTrivyLangPkgTemplate
 }
 func DefaultTrivyOSPkgTmpl() *template.Template {
-	return defaultTrivyOSPkgTmpl
+	return defaultTrivyOSPkgTemplate
 }

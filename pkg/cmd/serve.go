@@ -25,6 +25,7 @@ func newServe() *cli.Command {
 		ghApp     config.GitHubApp
 		firestore config.Firestore
 		policy    config.Policy
+		tmpl      config.TemplateConfig
 	)
 
 	flags := []cli.Flag{
@@ -40,6 +41,7 @@ func newServe() *cli.Command {
 	flags = append(flags, ghApp.Flags()...)
 	flags = append(flags, firestore.Flags()...)
 	flags = append(flags, policy.Flags()...)
+	flags = append(flags, tmpl.Flags()...)
 
 	return &cli.Command{
 		Name:    "serve",
@@ -70,7 +72,11 @@ func newServe() *cli.Command {
 				infra.WithPolicy(policyClient),
 			)
 
-			uc := usecase.New(clients)
+			options, err := tmpl.New()
+			if err != nil {
+				return err
+			}
+			uc := usecase.New(clients, options...)
 
 			handler := server.New(uc).Handler()
 

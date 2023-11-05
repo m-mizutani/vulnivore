@@ -1,5 +1,6 @@
-# vulnivore
-vulnivore is GitHub issue creator from SARIF data
+# Vulnivore [![GoDoc](https://godoc.org/github.com/m-mizutani/vulnivore?status.svg)](https://godoc.org/github.com/m-mizutani/vulnivore) [![Go Report Card](https://goreportcard.com/badge/github.com/m-mizutani/vulnivore)](https://goreportcard.com/report/github.com/m-mizutani/vulnivore) ![GitHub release](https://img.shields.io/github/release/m-mizutani/vulnivore.svg)
+
+Vulnivore is GitHub issue creator from vulnerability scan results for private repositories.
 
 ![Overview](https://github.com/m-mizutani/vulnivore/assets/605953/1d76ac7a-b609-4f12-95ae-4e3930a956bb)
 

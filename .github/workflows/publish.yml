@@ -2,6 +2,8 @@ name: publish
 
 on:
   push:
+    branches:
+      - main
 
 env:
   TAG_NAME: vulnivore:${{ github.sha }}
@@ -38,6 +40,28 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: "Pushed to ${{ env.GITHUB_IMAGE_NAME }}"
+
+  scan:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@69cbbc0cbbf6a2b0bab8dcf0e9f2d7ead08e87e4 # master
+        with:
+          scan-type: "image"
+          image-ref: ${{ env.TAG_NAME }}
+          ignore-unfixed: true
+          format: "json"
+          output: "trivy-results.json"
+      - name: Upload Trivy results
+        uses: m-mizutani/vulnivore-upload@main
+        with:
+          filepath: trivy-results.json
+          url: https://vulnivore-j47o6xodla-an.a.run.app/webhook/github/action/trivy
+          installation_id: "43608677"
 
   release-ghcr:
     runs-on: ubuntu-latest

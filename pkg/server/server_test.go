@@ -21,13 +21,13 @@ var trivyGHAuditReport []byte
 type useCaseMock struct {
 	interfaces.UseCase
 	MockHandleTrivy           func(ctx *model.Context, report *types.Report) error
-	MockValidateGitHubIDToken func(ctx *model.Context, token string) (*model.GitHubRepo, error)
+	MockValidateGitHubIDToken func(ctx *model.Context, token string) (*model.GitHubActionContext, error)
 }
 
 func (x *useCaseMock) HandleTrivy(ctx *model.Context, report *types.Report) error {
 	return x.MockHandleTrivy(ctx, report)
 }
-func (x *useCaseMock) ValidateGitHubIDToken(ctx *model.Context, token string) (*model.GitHubRepo, error) {
+func (x *useCaseMock) ValidateGitHubIDToken(ctx *model.Context, token string) (*model.GitHubActionContext, error) {
 	return x.MockValidateGitHubIDToken(ctx, token)
 }
 
@@ -63,15 +63,19 @@ func TestServerMiddleware(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			var called int
-			repo := &model.GitHubRepo{RepoID: 5}
+			repo := &model.GitHubActionContext{
+				GitHubRepo: model.GitHubRepo{
+					RepoID: 5,
+				},
+			}
 			uc := &useCaseMock{
-				MockValidateGitHubIDToken: func(ctx *model.Context, token string) (*model.GitHubRepo, error) {
+				MockValidateGitHubIDToken: func(ctx *model.Context, token string) (*model.GitHubActionContext, error) {
 					gt.Equal(t, token, "gh_token")
 					return repo, nil
 				},
 				MockHandleTrivy: func(ctx *model.Context, report *types.Report) error {
 					called++
-					gt.Equal(t, ctx.GitHubRepo(), repo)
+					gt.Equal(t, ctx.GitHubActionContext(), repo)
 					gt.Equal(t, ctx.GitHubInstallID(), tc.expectID)
 					return nil
 				},

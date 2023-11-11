@@ -150,10 +150,12 @@ func TestHandleSarif(t *testing.T) {
 			gt.NoError(t, json.Unmarshal(sarifGHAuditReport, &report))
 
 			ctx := model.NewContext(
-				model.WithGitHubRepo(&model.GitHubRepo{
-					RepoID: 4321,
-					Owner:  "m-mizutani",
-					Name:   "vulnivore",
+				model.WithGitHubActionContext(&model.GitHubActionContext{
+					GitHubRepo: model.GitHubRepo{
+						RepoID: 4321,
+						Owner:  "m-mizutani",
+						Name:   "vulnivore",
+					},
 				}),
 			)
 
@@ -219,10 +221,12 @@ func TestCloseResolvedVuln(t *testing.T) {
 	gt.NoError(t, json.Unmarshal(sarifGHAuditReport, &report))
 
 	ctx := model.NewContext(
-		model.WithGitHubRepo(&model.GitHubRepo{
-			RepoID: 4321,
-			Owner:  "m-mizutani",
-			Name:   "ghaudit",
+		model.WithGitHubActionContext(&model.GitHubActionContext{
+			GitHubRepo: model.GitHubRepo{
+				RepoID: 4321,
+				Owner:  "m-mizutani",
+				Name:   "ghaudit",
+			},
 		}),
 	)
 

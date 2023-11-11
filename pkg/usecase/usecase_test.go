@@ -22,10 +22,12 @@ func TestTemplateOption(t *testing.T) {
 	ts := setupTestSuite(t, usecase.WithTrivyOSPkgTemplate(tmpl))
 
 	ctx := model.NewContext(
-		model.WithGitHubRepo(&model.GitHubRepo{
-			RepoID: 4321,
-			Owner:  "m-mizutani",
-			Name:   "ghaudit",
+		model.WithGitHubActionContext(&model.GitHubActionContext{
+			GitHubRepo: model.GitHubRepo{
+				RepoID: 4321,
+				Owner:  "m-mizutani",
+				Name:   "ghaudit",
+			},
 		}),
 	)
 

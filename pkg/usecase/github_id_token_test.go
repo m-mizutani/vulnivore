@@ -20,4 +20,5 @@ func TestValidateGitHubIDToken(t *testing.T) {
 	gt.Equal(t, repo.Owner, "m-mizutani")
 	gt.Equal(t, repo.Name, "vulnivore")
 	gt.Equal(t, repo.RepoID, 705974143)
+	gt.N(t, repo.WorkflowRunID).Greater(0)
 }

@@ -13,12 +13,12 @@ import (
 )
 
 func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
-	repo := ctx.GitHubRepo()
-	if repo == nil {
+	ghaCtx := ctx.GitHubActionContext()
+	if ghaCtx == nil {
 		return goerr.Wrap(model.ErrInvalidContext, "GitHub repository is not set")
 	}
 
-	existsRecords, err := x.clients.Database().GetVulnRecords(ctx, repo.RepoID)
+	existsRecords, err := x.clients.Database().GetVulnRecords(ctx, ghaCtx.RepoID)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				}
 
 				issue := &model.GitHubIssue{
-					GitHubRepo:          *repo,
+					GitHubRepo:          *&ghaCtx.GitHubRepo,
 					GitHubIssueContents: *contents,
 					Assignees:           evalResult.Assignees,
 					Labels:              evalResult.Labels,
@@ -72,9 +72,9 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 				newRecord := model.VulnRecord{
 					RecordID: recordID,
 
-					RepoID:     repo.RepoID,
-					Owner:      repo.Owner,
-					RepoName:   repo.Name,
+					RepoID:     ghaCtx.RepoID,
+					Owner:      ghaCtx.Owner,
+					RepoName:   ghaCtx.Name,
 					IssueID:    newIssue.GetNumber(),
 					IssueState: newIssue.GetState(),
 				}
@@ -92,7 +92,7 @@ func (x *useCase) HandleSarif(ctx *model.Context, report *sarif.Report) error {
 			continue
 		}
 
-		if err := x.clients.GitHubApp().CloseIssue(ctx, repo, record.IssueID); err != nil {
+		if err := x.clients.GitHubApp().CloseIssue(ctx, &ghaCtx.GitHubRepo, record.IssueID); err != nil {
 			return err
 		}
 	}

@@ -13,12 +13,12 @@ import (
 )
 
 func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
-	repo := ctx.GitHubRepo()
-	if repo == nil {
+	ghaCtx := ctx.GitHubActionContext()
+	if ghaCtx == nil {
 		return goerr.Wrap(model.ErrInvalidContext, "GitHub repository is not set")
 	}
 
-	existsRecords, err := x.clients.Database().GetVulnRecords(ctx, repo.RepoID)
+	existsRecords, err := x.clients.Database().GetVulnRecords(ctx, ghaCtx.RepoID)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 			}
 
 			issue := &model.GitHubIssue{
-				GitHubRepo:          *repo,
+				GitHubRepo:          ghaCtx.GitHubRepo,
 				GitHubIssueContents: *contents,
 			}
 			if len(evalResult.Labels) > 0 {
@@ -113,9 +113,9 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 
 			newRecord := model.VulnRecord{
 				RecordID:       recordID,
-				RepoID:         repo.RepoID,
-				RepoName:       repo.Name,
-				Owner:          repo.Owner,
+				RepoID:         ghaCtx.RepoID,
+				RepoName:       ghaCtx.Name,
+				Owner:          ghaCtx.Owner,
 				IssueID:        newIssue.GetNumber(),
 				IssueState:     newIssue.GetState(),
 				LastModifiedAt: vuln.LastModifiedDate,
@@ -131,7 +131,7 @@ func (x *useCase) HandleTrivy(ctx *model.Context, report *types.Report) error {
 			continue
 		}
 
-		if err := x.clients.GitHubApp().CloseIssue(ctx, repo, record.IssueID); err != nil {
+		if err := x.clients.GitHubApp().CloseIssue(ctx, &ghaCtx.GitHubRepo, record.IssueID); err != nil {
 			return err
 		}
 	}

@@ -40,3 +40,8 @@ type GitHubIssueContents struct {
 	Title string
 	Body  string
 }
+
+type GitHubActionContext struct {
+	WorkflowRunID int64
+	GitHubRepo
+}

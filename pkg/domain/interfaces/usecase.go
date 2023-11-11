@@ -11,7 +11,7 @@ import (
 
 type UseCase interface {
 	ValidateGitHubEvent(r *http.Request) ([]byte, error)
-	ValidateGitHubIDToken(ctx *model.Context, token string) (*model.GitHubRepo, error)
+	ValidateGitHubIDToken(ctx *model.Context, token string) (*model.GitHubActionContext, error)
 	HandleIssueEvent(ctx *model.Context, event *github.IssueEvent) error
 	HandleSarif(ctx *model.Context, report *sarif.Report) error
 	HandleTrivy(ctx *model.Context, report *types.Report) error

@@ -207,10 +207,12 @@ func newTestRun() *cli.Command {
 			uc := usecase.New(infra.New(infraOpt...), ucOpt...)
 			ctx := model.NewContext(
 				model.WithContext(c.Context),
-				model.WithGitHubRepo(&model.GitHubRepo{
-					RepoID: model.GitHubRepoID(repoID),
-					Owner:  repoOwner,
-					Name:   repoName,
+				model.WithGitHubActionContext(&model.GitHubActionContext{
+					GitHubRepo: model.GitHubRepo{
+						RepoID: model.GitHubRepoID(repoID),
+						Owner:  repoOwner,
+						Name:   repoName,
+					},
 				}),
 			)
 			if err := uc.HandleTrivy(ctx, &report); err != nil {

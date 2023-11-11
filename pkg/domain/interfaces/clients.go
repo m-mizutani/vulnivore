@@ -16,6 +16,10 @@ type GitHubApp interface {
 	CreateIssue(ctx *model.Context, issue *model.GitHubIssue) (*github.Issue, error)
 	CloseIssue(ctx *model.Context, repo *model.GitHubRepo, issueNo int) error
 	ValidateEventPayload(r *http.Request) ([]byte, error)
+
+	GetMetaData(ctx *model.Context, repo *model.GitHubRepo) (*github.Repository, error)
+	GetWorkflowRun(ctx *model.Context, repo *model.GitHubRepo, runID int64) (*github.WorkflowRun, error)
+	CreatePullRequestComment(ctx *model.Context, repo *model.GitHubRepo, prNo int, body string) error
 }
 
 type Policy interface {

@@ -15,7 +15,7 @@ import (
 func TestAuthGitHubAction(t *testing.T) {
 	testCases := map[string]struct {
 		http.Header
-		resp        *model.GitHubRepo
+		resp        *model.GitHubActionContext
 		err         error
 		expectToken string
 		expectCode  int
@@ -25,8 +25,10 @@ func TestAuthGitHubAction(t *testing.T) {
 			Header: http.Header{
 				"Authorization": []string{"Bearer gh_token"},
 			},
-			resp: &model.GitHubRepo{
-				RepoID: 5,
+			resp: &model.GitHubActionContext{
+				GitHubRepo: model.GitHubRepo{
+					RepoID: 5,
+				},
 			},
 			expectToken: "gh_token",
 			expectCode:  http.StatusOK,
@@ -35,8 +37,10 @@ func TestAuthGitHubAction(t *testing.T) {
 			Header: http.Header{
 				"authorization": []string{"bearer gh_token"},
 			},
-			resp: &model.GitHubRepo{
-				RepoID: 5,
+			resp: &model.GitHubActionContext{
+				GitHubRepo: model.GitHubRepo{
+					RepoID: 5,
+				},
 			},
 			expectToken: "gh_token",
 			expectCode:  http.StatusOK,
@@ -67,7 +71,7 @@ func TestAuthGitHubAction(t *testing.T) {
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			validator := func(ctx *model.Context, token string) (*model.GitHubRepo, error) {
+			validator := func(ctx *model.Context, token string) (*model.GitHubActionContext, error) {
 				gt.Equal(t, tc.expectToken, token)
 				return tc.resp, tc.err
 			}
@@ -78,7 +82,7 @@ func TestAuthGitHubAction(t *testing.T) {
 			route.Get("/", func(w http.ResponseWriter, r *http.Request) {
 				ctx := server.ToVulnivoreContext(r.Context())
 				installedID = ctx.GitHubInstallID()
-				gt.Equal(t, ctx.GitHubRepo(), tc.resp)
+				gt.Equal(t, ctx.GitHubActionContext(), tc.resp)
 				w.WriteHeader(http.StatusOK)
 			})
 

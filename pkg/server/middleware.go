@@ -50,7 +50,7 @@ func respondError(w http.ResponseWriter, status int, msg string) {
 	utils.SafeMarshal(w, data)
 }
 
-type validateFunc func(ctx *model.Context, token string) (*model.GitHubRepo, error)
+type validateFunc func(ctx *model.Context, token string) (*model.GitHubActionContext, error)
 
 func authGitHubAction(validate validateFunc) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -86,7 +86,7 @@ func authGitHubAction(validate validateFunc) func(next http.Handler) http.Handle
 			}
 			ctx.Logger().Info("GitHub ID token is verified", slog.Any("repo", repo))
 
-			ctx = ctx.New(model.WithGitHubRepo(repo))
+			ctx = ctx.New(model.WithGitHubActionContext(repo))
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

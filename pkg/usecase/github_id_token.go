@@ -27,7 +27,6 @@ func (x *useCase) ValidateGitHubIDToken(ctx *model.Context, token string) (*mode
 
 func token2GitHubRepo(tok jwt.Token) (*model.GitHubActionContext, error) {
 	var repo model.GitHubActionContext
-
 	if v, ok := tok.Get("repository_id"); !ok {
 		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "repository_id is not found")
 	} else if s, ok := v.(string); !ok {
@@ -49,7 +48,7 @@ func token2GitHubRepo(tok jwt.Token) (*model.GitHubActionContext, error) {
 		repo.Name = sep[1]
 	}
 
-	if v, ok := tok.Get("run_id"); ok {
+	if v, ok := tok.Get("run_id"); !ok {
 		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "run_id is not found")
 	} else if s, ok := v.(string); !ok {
 		return nil, goerr.Wrap(model.ErrInvalidGitHubIDToken, "run_id is not string").With("run_id", v)
